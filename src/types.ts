@@ -1,9 +1,9 @@
-interface Point {
+export interface Point {
   x: number;
   y: number;
 }
 
-type Direction = "row" | "row-reverse" | "column" | "column-reverse";
+type Direction = 'row' | 'row-reverse' | 'column' | 'column-reverse';
 
 interface VideoInfo {
   /**
@@ -16,7 +16,7 @@ interface VideoInfo {
   time: number;
 }
 
-interface TimeLine {
+export interface TimeLine {
   /**
    * 视频的宽度
    */
