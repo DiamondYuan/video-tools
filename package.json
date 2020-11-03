@@ -1,0 +1,11 @@
+{
+  "name": "timeline",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:DiamondYuan/timeline.git",
+  "author": "DiamondYuan <admin@diamondyuan.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^4.0.5"
+  }
+}
