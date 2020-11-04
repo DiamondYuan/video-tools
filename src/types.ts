@@ -43,4 +43,7 @@ export interface TimeLine {
    * 各段视频短时间
    */
   videos: VideoInfo[];
+  backgroundColor: string;
+  progressColor: string;
+  fontSize: number;
 }
