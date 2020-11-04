@@ -5,6 +5,9 @@
   "repository": "git@github.com:DiamondYuan/timeline.git",
   "author": "DiamondYuan <admin@diamondyuan.com>",
   "license": "MIT",
+  "scripts": {
+    "start": "umi dev"
+  },
   "devDependencies": {
     "@diamondyuan/eslint-config-react-typescript": "^7.0.1",
     "@typescript-eslint/eslint-plugin": "^4.6.1",

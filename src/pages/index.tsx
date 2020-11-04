@@ -8,7 +8,7 @@ export default () => {
   return (
     <div>
       <canvas style={{ border: '1px solid black' }}></canvas>
-      Hello World
+      <div>{'Hello World'}</div>
     </div>
   );
 };
