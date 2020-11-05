@@ -3,8 +3,6 @@ export interface Point {
   y: number;
 }
 
-type Direction = 'row' | 'row-reverse' | 'column' | 'column-reverse';
-
 interface VideoInfo {
   /**
    * 每一段视频中的文字
@@ -27,6 +25,30 @@ export interface TimeLine {
   height: number;
 
   /**
+   * 时间轴的尺寸（ 高度 / 宽度 ）
+   */
+  size: number;
+
+  /**
+   * 时间轴的位置
+   */
+  position: 'top' | 'bottom' | 'right' | 'left';
+  /**
+   * 进度条是否逆向
+   */
+  reverse: boolean;
+  /**
+   * 各段视频短时间
+   */
+  videos: VideoInfo[];
+  backgroundColor: string;
+  progressColor: string;
+  fontSize: number;
+}
+
+export interface TimeLineInfo extends TimeLine {
+  totalTime: number;
+  /**
    * 进度条的四个点
    */
   points: {
@@ -35,15 +57,4 @@ export interface TimeLine {
     bottomLeft: Point;
     bottomRight: Point;
   };
-  /**
-   * 进度条的方向
-   */
-  direction: Direction;
-  /**
-   * 各段视频短时间
-   */
-  videos: VideoInfo[];
-  backgroundColor: string;
-  progressColor: string;
-  fontSize: number;
 }
