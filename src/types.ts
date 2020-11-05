@@ -44,6 +44,7 @@ export interface TimeLine {
   backgroundColor: string;
   progressColor: string;
   fontSize: number;
+  lineColor: string;
 }
 
 export interface TimeLineInfo extends TimeLine {

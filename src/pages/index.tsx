@@ -1,13 +1,14 @@
 // eslint-disable-next-line no-use-before-define
-import React, { useLayoutEffect } from 'react';
+import React, { useLayoutEffect, useState } from 'react';
 import { TimeLine, TimeLineInfo, Point } from 'src/types';
+import { Row, Col, Form, Select } from 'antd';
 
 const MockTimeLine: TimeLine = {
   width: 1920,
   height: 1080,
   progressColor: '#1890ff',
-  // backgroundColor: '#f5f5f5',
-  backgroundColor: 'red',
+  backgroundColor: '#f5f5f5',
+  lineColor: 'red',
   fontSize: 20,
   size: 40,
   reverse: false,
@@ -129,8 +130,12 @@ function transForm(timeLine: TimeLine, devicePixelRatio: number): TimeLineInfo {
 class TimeLineDrawer {
   constructor(private timeLineInfo: TimeLineInfo, private context: CanvasRenderingContext2D) {}
   public drawStart() {
+    this.drawBackground(this.timeLineInfo.backgroundColor);
+    this.drawLine(this.timeLineInfo.lineColor);
+  }
+  public drawEnd() {
     this.drawBackground(this.timeLineInfo.progressColor);
-    this.drawLine(this.timeLineInfo.backgroundColor);
+    this.drawLine(this.timeLineInfo.lineColor);
   }
   private drawBackground(color: string) {
     const points = this.timeLineInfo.points;
@@ -231,14 +236,25 @@ class TimeLineDrawer {
 }
 
 export default () => {
+  const [timeline, setTimeLine] = useState(MockTimeLine);
+
   useLayoutEffect(() => {
-    const timeLineInfo = transForm(MockTimeLine, window.devicePixelRatio);
-    const canvas: HTMLCanvasElement = document.querySelector('#canvas')! as HTMLCanvasElement;
-    canvas.setAttribute('width', `${timeLineInfo.width}`);
-    canvas.setAttribute('height', `${timeLineInfo.height}`);
-    const context = canvas.getContext('2d')!;
+    const timeLineInfo = transForm(timeline, window.devicePixelRatio);
+    const startCanvas: HTMLCanvasElement = document.querySelector('#start')! as HTMLCanvasElement;
+
+    startCanvas.setAttribute('width', `${timeLineInfo.width}`);
+    startCanvas.setAttribute('height', `${timeLineInfo.height}`);
+    const context = startCanvas.getContext('2d')!;
+    context.clearRect(0, 0, timeLineInfo.width, timeLineInfo.height);
     new TimeLineDrawer(timeLineInfo, context).drawStart();
-  });
+
+    const end: HTMLCanvasElement = document.querySelector('#end')! as HTMLCanvasElement;
+    end.setAttribute('width', `${timeLineInfo.width}`);
+    end.setAttribute('height', `${timeLineInfo.height}`);
+    const endContext = end.getContext('2d')!;
+    endContext.clearRect(0, 0, timeLineInfo.width, timeLineInfo.height);
+    new TimeLineDrawer(timeLineInfo, endContext).drawEnd();
+  }, [timeline]);
 
   const handleExport = () => {
     const canvas: HTMLCanvasElement = document.querySelector('#canvas')! as HTMLCanvasElement;
@@ -252,17 +268,61 @@ export default () => {
   };
 
   return (
-    <div>
+    <div style={{ padding: 24 }}>
       <div>{'这个是一个辅助工具，输入每段视频的长度，自动生成时间轴。'}</div>
       <br></br>
-      <canvas
-        id="canvas"
-        style={{
-          border: '1px solid black',
-          height: MockTimeLine.height / 3,
-          width: MockTimeLine.width / 3,
+      <Row gutter={20}>
+        <Col span={12}>
+          <canvas
+            id="start"
+            style={{
+              border: '1px solid black',
+              width: '100%',
+            }}
+          ></canvas>
+        </Col>
+        <Col span={12}>
+          <canvas
+            id="end"
+            style={{
+              border: '1px solid black',
+              width: '100%',
+            }}
+          ></canvas>
+        </Col>
+      </Row>
+      <Form
+        initialValues={timeline}
+        onValuesChange={(e) => {
+          setTimeLine((v) => ({
+            ...v,
+            ...e,
+          }));
         }}
-      ></canvas>
+      >
+        <Form.Item label="时间轴位置" name="position">
+          <Select
+            options={[
+              {
+                label: '顶部',
+                value: 'top',
+              },
+              {
+                label: '底部',
+                value: 'bottom',
+              },
+              {
+                label: '左边',
+                value: 'left',
+              },
+              {
+                label: '右边',
+                value: 'right',
+              },
+            ]}
+          ></Select>
+        </Form.Item>
+      </Form>
       <div></div>
       <button onClick={handleExport}>导出</button>
     </div>

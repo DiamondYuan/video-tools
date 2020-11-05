@@ -12,6 +12,7 @@
     "@diamondyuan/eslint-config-react-typescript": "^7.0.1",
     "@typescript-eslint/eslint-plugin": "^4.6.1",
     "@typescript-eslint/parser": "^4.6.1",
+    "@umijs/plugin-antd": "^0.9.0",
     "babel-eslint": "^10.1.0",
     "eslint": "^7.12.1",
     "eslint-config-prettier": "^6.15.0",
