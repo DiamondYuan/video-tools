@@ -1,10 +1,27 @@
 // eslint-disable-next-line no-use-before-define
 import React, { useLayoutEffect, useState } from 'react';
 import { TimeLine, TimeLineInfo, Point, TimeLineColor } from 'src/types';
-import { Row, Col, Form, Select, Space } from 'antd';
+
+import {
+  Row,
+  Col,
+  Form,
+  Switch,
+  Slider,
+  Radio,
+  InputNumber,
+  Space,
+  Input,
+  Button,
+  TimePicker,
+} from 'antd';
 import ColorPicker from '../componments/ColorPicker';
+import { MinusCircleOutlined, PlusOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import moment from 'moment';
 
 const MockTimeLine: TimeLine = {
+  lineWidth: 2,
+  linePadding: 2,
   start: {
     backgroundColor: '#f5f5f5',
     borderColor: '#f5f5f5',
@@ -19,10 +36,6 @@ const MockTimeLine: TimeLine = {
   },
   width: 1920,
   height: 1080,
-  progressColor: '#1890ff',
-  backgroundColor: '#f5f5f5',
-  lineColor: 'red',
-  fontColor: 'red',
   fontSize: 20,
   size: 40,
   reverse: false,
@@ -124,6 +137,7 @@ function transForm(timeLine: TimeLine, devicePixelRatio: number): TimeLineInfo {
     },
   };
   let totalTime = 0;
+  timeLine.videos = timeLine.videos.filter((o) => o.text !== undefined && o.time !== undefined);
   for (let i = 0; i < timeLine.videos.length; i++) {
     totalTime = totalTime + timeLine.videos[i].time;
   }
@@ -138,6 +152,8 @@ function transForm(timeLine: TimeLine, devicePixelRatio: number): TimeLineInfo {
     fontSize: timeLine.fontSize * devicePixelRatio,
     width: timeLine.width * devicePixelRatio,
     height: timeLine.height * devicePixelRatio,
+    linePadding: timeLine.linePadding * devicePixelRatio,
+    lineWidth: timeLine.lineWidth * devicePixelRatio,
   };
 }
 
@@ -152,10 +168,10 @@ class TimeLineDrawer {
     this.drawLine(this.timeLineInfo.end);
   }
   private drawBackground(color: TimeLineColor) {
-    console.log('color', color);
     const points = this.timeLineInfo.points;
     this.context.fillStyle = color.backgroundColor;
     this.context.strokeStyle = color.borderColor;
+    this.context.lineWidth = 2;
     this.context.moveTo(points.topLeft.x, points.topLeft.y);
     this.context.lineTo(points.topRight.x, points.topRight.y);
     this.context.lineTo(points.bottomRight.x, points.bottomRight.y);
@@ -191,7 +207,7 @@ class TimeLineDrawer {
     this.context.fillText(line, x, y);
   }
 
-  private getLineCount(text: string, maxWidth: number) {
+  private getLineCount(text: string = '', maxWidth: number) {
     let arrText = text.split('');
     let line = '';
     this.context.font = `${this.timeLineInfo.fontSize}px Arial`;
@@ -211,7 +227,7 @@ class TimeLineDrawer {
   }
 
   private drawLine(color: TimeLineColor) {
-    const { videos, totalTime, position, points } = this.timeLineInfo;
+    const { videos, totalTime, position, points, linePadding } = this.timeLineInfo;
     let totalLength: number = 0;
     const isRow = position === 'bottom' || position === 'top';
     if (isRow) {
@@ -228,10 +244,11 @@ class TimeLineDrawer {
           x: pointer.x + step,
           y: points.topLeft.y,
         };
-        this.context.lineWidth = 2;
+        this.context.beginPath();
+        this.context.lineWidth = this.timeLineInfo.lineWidth;
         this.context.strokeStyle = color.lineColor;
-        this.context.moveTo(pointer.x, pointer.y);
-        this.context.lineTo(pointer.x, pointer.y + lineSize);
+        this.context.moveTo(pointer.x, pointer.y + linePadding);
+        this.context.lineTo(pointer.x, pointer.y + lineSize - linePadding);
         this.context.stroke();
         this.wrapText(
           video.text,
@@ -245,10 +262,11 @@ class TimeLineDrawer {
           x: points.topLeft.x,
           y: pointer.y + step,
         };
-        this.context.lineWidth = 2;
+        this.context.beginPath();
+        this.context.lineWidth = this.timeLineInfo.lineWidth;
         this.context.strokeStyle = color.lineColor;
-        this.context.moveTo(pointer.x, pointer.y);
-        this.context.lineTo(pointer.x + lineSize, pointer.y);
+        this.context.moveTo(pointer.x + linePadding, pointer.y);
+        this.context.lineTo(pointer.x + lineSize - linePadding, pointer.y);
         this.context.stroke();
         this.wrapText(
           video.text,
@@ -262,8 +280,19 @@ class TimeLineDrawer {
   }
 }
 
+const formItemLayout = {
+  labelCol: {
+    span: 6,
+  },
+  wrapperCol: {
+    span: 18,
+  },
+};
+
 export default () => {
   const [timeline, setTimeLine] = useState(MockTimeLine);
+  const [form] = Form.useForm();
+
   useLayoutEffect(() => {
     const timeLineInfo = transForm(timeline, window.devicePixelRatio);
     const startCanvas: HTMLCanvasElement = document.querySelector('#start')! as HTMLCanvasElement;
@@ -272,13 +301,26 @@ export default () => {
     const context = startCanvas.getContext('2d')!;
     context.clearRect(0, 0, timeLineInfo.width, timeLineInfo.height);
     new TimeLineDrawer(timeLineInfo, context).drawStart();
-
     const end: HTMLCanvasElement = document.querySelector('#end')! as HTMLCanvasElement;
     end.setAttribute('width', `${timeLineInfo.width}`);
     end.setAttribute('height', `${timeLineInfo.height}`);
     const endContext = end.getContext('2d')!;
     endContext.clearRect(0, 0, timeLineInfo.width, timeLineInfo.height);
     new TimeLineDrawer(timeLineInfo, endContext).drawEnd();
+
+    const showTimeLineInfo = transForm(
+      {
+        ...timeline,
+        position: 'top',
+      },
+      window.devicePixelRatio
+    );
+    const showCanvas: HTMLCanvasElement = document.querySelector('#show')! as HTMLCanvasElement;
+    showCanvas.setAttribute('width', `${timeLineInfo.width}`);
+    showCanvas.setAttribute('height', `${timeLineInfo.size}`);
+    const showContext = showCanvas.getContext('2d')!;
+    showContext.clearRect(0, 0, timeLineInfo.width, timeLineInfo.height);
+    new TimeLineDrawer(showTimeLineInfo, showContext).drawStart();
   }, [timeline]);
 
   const download = (id: string) => {
@@ -292,17 +334,39 @@ export default () => {
     document.body.removeChild(dlLink);
   };
 
+  const getTime = (index: number) => {
+    if (index < 0) {
+      return moment().startOf('day');
+    }
+    let total = 0;
+
+    for (let i = 0; i <= index; i++) {
+      total = timeline.videos[i].time + total;
+    }
+    return moment().startOf('day').add(total, 'second');
+  };
+
   return (
     <div style={{ padding: 24 }}>
       <div>{'这个是一个辅助工具，输入每段视频的长度，自动生成时间轴。'}</div>
       <br></br>
+      <Row style={{ marginBottom: 8 }}>
+        <canvas
+          id="show"
+          style={{
+            border: '1px solid #ccc',
+            width: '100%',
+          }}
+        ></canvas>
+      </Row>
       <Row gutter={20}>
         <Col span={12}>
           <canvas
             id="start"
             style={{
               border: '1px solid #ccc',
-              width: '100%',
+              maxHeight: '500px',
+              maxWidth: '100%',
             }}
           ></canvas>
         </Col>
@@ -311,35 +375,135 @@ export default () => {
             id="end"
             style={{
               border: '1px solid #ccc',
-              width: '100%',
+              maxHeight: '500px',
+              maxWidth: '100%',
             }}
           ></canvas>
         </Col>
       </Row>
       <Form
+        form={form}
         initialValues={timeline}
-        onValuesChange={(e) => {
-          for (const key of ['start', 'end']) {
-            if (e[key]) {
-              setTimeLine((v: TimeLine) => ({
-                ...v,
-                [key]: {
-                  ...(v[key as 'start' | 'end'] as TimeLineColor),
-                  ...e[key],
-                },
-              }));
-              return;
-            }
-          }
-          setTimeLine((v) => ({
-            ...v,
-            ...e,
-          }));
+        onValuesChange={(_e, values) => {
+          setTimeLine((v) => {
+            console.log('ch');
+            return {
+              ...v,
+              ...values,
+            };
+          });
         }}
       >
+        <Form.List name="videos">
+          {(fields, { add, remove }) => (
+            <>
+              {fields.map((field, index) => (
+                <Space
+                  key={field.key}
+                  style={{ display: 'flex', marginBottom: 8 }}
+                  align="baseline"
+                >
+                  <PlusCircleOutlined
+                    onClick={() => {
+                      add(
+                        {
+                          time: 0,
+                          text: '',
+                        },
+                        index
+                      );
+                    }}
+                  />
+                  <Form.Item
+                    {...field}
+                    name={[field.name, 'text']}
+                    fieldKey={[field.fieldKey, 'text']}
+                  >
+                    <Input />
+                  </Form.Item>
+                  <Form.Item
+                    label="时长"
+                    {...field}
+                    name={[field.name, 'time']}
+                    fieldKey={[field.fieldKey, 'time']}
+                  >
+                    <InputNumber />
+                  </Form.Item>
+                  <TimePicker
+                    showNow={false}
+                    format="HH:mm:ss"
+                    value={getTime(index)}
+                    allowClear={false}
+                    onChange={(e) => {
+                      const diffSeconds = e!.diff(getTime(index - 1), 'seconds');
+                      form.setFields([
+                        {
+                          name: ['videos', field.name, 'time'],
+                          value: diffSeconds,
+                        },
+                      ]);
+                      setTimeLine(form.getFieldsValue());
+                    }}
+                  />
+                  <PlusCircleOutlined
+                    onClick={() => {
+                      add(
+                        {
+                          time: 0,
+                          text: '',
+                        },
+                        index + 1
+                      );
+                    }}
+                  />
+                  <MinusCircleOutlined
+                    onClick={() => {
+                      remove(field.name);
+                    }}
+                  />
+                </Space>
+              ))}
+              <Form.Item>
+                <Button
+                  type="dashed"
+                  onClick={() =>
+                    add({
+                      time: 0,
+                      text: '',
+                    })
+                  }
+                  icon={<PlusOutlined />}
+                >
+                  Add field
+                </Button>
+              </Form.Item>
+            </>
+          )}
+        </Form.List>
+        <Form.Item label="分割线距离边缘" name="linePadding">
+          <InputNumber></InputNumber>
+        </Form.Item>
+        <Form.Item label="线宽" name="lineWidth">
+          <InputNumber></InputNumber>
+        </Form.Item>
+        <Form.Item label="屏幕宽度" name="width">
+          <InputNumber></InputNumber>
+        </Form.Item>
+        <Form.Item label="屏幕高度" name="height">
+          <InputNumber></InputNumber>
+        </Form.Item>
+        <Form.Item label="逆转" name="reverse">
+          <Switch></Switch>
+        </Form.Item>
+        <Form.Item label="字体大小" name="fontSize">
+          <Slider tooltipVisible></Slider>
+        </Form.Item>
+        <Form.Item label="时间轴尺寸" name="size">
+          <Slider tooltipVisible></Slider>
+        </Form.Item>
         <Form.Item label="时间轴位置" name="position">
-          <Select
-            options={[
+          <Radio.Group>
+            {[
               {
                 label: '顶部',
                 value: 'top',
@@ -356,44 +520,46 @@ export default () => {
                 label: '右边',
                 value: 'right',
               },
-            ]}
-          ></Select>
+            ].map((o) => (
+              <Radio key={o.value} value={o.value}>
+                {o.label}
+              </Radio>
+            ))}
+          </Radio.Group>
         </Form.Item>
         <Row>
-          <Form.Item label="开始">
-            <Space>
-              <Form.Item label="分割线颜色" name={['start', 'lineColor']}>
+          <Col span={12}>
+            <Form.Item label="开始">
+              <Form.Item label="分割线颜色" name={['start', 'lineColor']} {...formItemLayout}>
                 <ColorPicker></ColorPicker>
               </Form.Item>
-              <Form.Item label="边框颜色" name={['start', 'borderColor']}>
+              <Form.Item label="边框颜色" name={['start', 'borderColor']} {...formItemLayout}>
                 <ColorPicker></ColorPicker>
               </Form.Item>
-              <Form.Item label="背景色" name={['start', 'backgroundColor']}>
+              <Form.Item label="背景色" name={['start', 'backgroundColor']} {...formItemLayout}>
                 <ColorPicker></ColorPicker>
               </Form.Item>
-              <Form.Item label="字体颜色" name={['start', 'fontColor']}>
+              <Form.Item label="字体颜色" name={['start', 'fontColor']} {...formItemLayout}>
                 <ColorPicker></ColorPicker>
               </Form.Item>
-            </Space>
-          </Form.Item>
-        </Row>
-        <Row>
-          <Form.Item label="结束">
-            <Space>
-              <Form.Item label="分割线颜色" name={['end', 'lineColor']}>
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item label="结束">
+              <Form.Item label="分割线颜色" name={['end', 'lineColor']} {...formItemLayout}>
                 <ColorPicker></ColorPicker>
               </Form.Item>
-              <Form.Item label="边框颜色" name={['end', 'borderColor']}>
+              <Form.Item label="边框颜色" name={['end', 'borderColor']} {...formItemLayout}>
                 <ColorPicker></ColorPicker>
               </Form.Item>
-              <Form.Item label="背景色" name={['end', 'backgroundColor']}>
+              <Form.Item label="背景色" name={['end', 'backgroundColor']} {...formItemLayout}>
                 <ColorPicker></ColorPicker>
               </Form.Item>
-              <Form.Item label="字体颜色" name={['end', 'fontColor']}>
+              <Form.Item label="字体颜色" name={['end', 'fontColor']} {...formItemLayout}>
                 <ColorPicker></ColorPicker>
               </Form.Item>
-            </Space>
-          </Form.Item>
+            </Form.Item>
+          </Col>
         </Row>
       </Form>
       <div></div>

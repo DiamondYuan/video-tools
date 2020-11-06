@@ -15,11 +15,16 @@ interface VideoInfo {
 }
 export interface TimeLineColor {
   backgroundColor: string;
+  /**
+   * 字体颜色
+   */
   fontColor: string;
   borderColor: string;
   lineColor: string;
 }
 export interface TimeLine {
+  lineWidth: number;
+  linePadding: number;
   start: TimeLineColor;
   end: TimeLineColor;
   /**
@@ -41,10 +46,6 @@ export interface TimeLine {
    */
   position: 'top' | 'bottom' | 'right' | 'left';
   /**
-   * 字体颜色
-   */
-  fontColor: string;
-  /**
    * 进度条是否逆向
    */
   reverse: boolean;
@@ -52,10 +53,7 @@ export interface TimeLine {
    * 各段视频短时间
    */
   videos: VideoInfo[];
-  backgroundColor: string;
-  progressColor: string;
   fontSize: number;
-  lineColor: string;
 }
 
 export interface TimeLineInfo extends TimeLine {
