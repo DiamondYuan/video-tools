@@ -1,10 +1,22 @@
 // eslint-disable-next-line no-use-before-define
 import React, { useLayoutEffect, useState } from 'react';
-import { TimeLine, TimeLineInfo, Point } from 'src/types';
-import { Row, Col, Form, Select } from 'antd';
+import { TimeLine, TimeLineInfo, Point, TimeLineColor } from 'src/types';
+import { Row, Col, Form, Select, Space } from 'antd';
 import ColorPicker from '../componments/ColorPicker';
 
 const MockTimeLine: TimeLine = {
+  start: {
+    backgroundColor: '#f5f5f5',
+    borderColor: '#f5f5f5',
+    lineColor: '#000000',
+    fontColor: '#000000',
+  },
+  end: {
+    backgroundColor: '#1890ff',
+    borderColor: '#1890ff',
+    lineColor: '#fff',
+    fontColor: '#fff',
+  },
   width: 1920,
   height: 1080,
   progressColor: '#1890ff',
@@ -132,33 +144,34 @@ function transForm(timeLine: TimeLine, devicePixelRatio: number): TimeLineInfo {
 class TimeLineDrawer {
   constructor(private timeLineInfo: TimeLineInfo, private context: CanvasRenderingContext2D) {}
   public drawStart() {
-    this.drawBackground(this.timeLineInfo.backgroundColor);
-    this.drawLine(this.timeLineInfo.lineColor);
+    this.drawBackground(this.timeLineInfo.start);
+    this.drawLine(this.timeLineInfo.start);
   }
   public drawEnd() {
-    this.drawBackground(this.timeLineInfo.progressColor);
-    this.drawLine(this.timeLineInfo.lineColor);
+    this.drawBackground(this.timeLineInfo.end);
+    this.drawLine(this.timeLineInfo.end);
   }
-  private drawBackground(color: string) {
+  private drawBackground(color: TimeLineColor) {
+    console.log('color', color);
     const points = this.timeLineInfo.points;
-    this.context.fillStyle = color;
-    this.context.strokeStyle = color;
+    this.context.fillStyle = color.backgroundColor;
+    this.context.strokeStyle = color.borderColor;
     this.context.moveTo(points.topLeft.x, points.topLeft.y);
     this.context.lineTo(points.topRight.x, points.topRight.y);
     this.context.lineTo(points.bottomRight.x, points.bottomRight.y);
     this.context.lineTo(points.bottomLeft.x, points.bottomLeft.y);
-    this.context.fill();
     this.context.stroke();
+    this.context.fill();
   }
 
-  private wrapText(text: string, x: number, y: number, maxWidth: number) {
+  private wrapText(text: string, x: number, y: number, maxWidth: number, color: string) {
     const lineCount = this.getLineCount(text, maxWidth);
     const lineHeight = this.timeLineInfo.fontSize;
     // eslint-disable-next-line no-param-reassign
     y = y - ((lineCount - 1) / 2) * lineHeight;
     let arrText = text.split('');
     let line = '';
-    this.context.fillStyle = this.timeLineInfo.fontColor;
+    this.context.fillStyle = color;
     this.context.font = `${this.timeLineInfo.fontSize}px Arial`;
     this.context.textBaseline = 'middle';
     this.context.textAlign = 'center';
@@ -197,7 +210,7 @@ class TimeLineDrawer {
     return lintCount;
   }
 
-  private drawLine(color: string) {
+  private drawLine(color: TimeLineColor) {
     const { videos, totalTime, position, points } = this.timeLineInfo;
     let totalLength: number = 0;
     const isRow = position === 'bottom' || position === 'top';
@@ -216,22 +229,34 @@ class TimeLineDrawer {
           y: points.topLeft.y,
         };
         this.context.lineWidth = 2;
-        this.context.strokeStyle = color;
+        this.context.strokeStyle = color.lineColor;
         this.context.moveTo(pointer.x, pointer.y);
         this.context.lineTo(pointer.x, pointer.y + lineSize);
         this.context.stroke();
-        this.wrapText(video.text, pointer.x - step / 2, pointer.y + lineSize / 2, step);
+        this.wrapText(
+          video.text,
+          pointer.x - step / 2,
+          pointer.y + lineSize / 2,
+          step,
+          color.fontColor
+        );
       } else {
         pointer = {
           x: points.topLeft.x,
           y: pointer.y + step,
         };
         this.context.lineWidth = 2;
-        this.context.strokeStyle = color;
+        this.context.strokeStyle = color.lineColor;
         this.context.moveTo(pointer.x, pointer.y);
         this.context.lineTo(pointer.x + lineSize, pointer.y);
         this.context.stroke();
-        this.wrapText(video.text, points.topLeft.x + lineSize / 2, pointer.y - step / 2, lineSize);
+        this.wrapText(
+          video.text,
+          points.topLeft.x + lineSize / 2,
+          pointer.y - step / 2,
+          lineSize,
+          color.fontColor
+        );
       }
     }
   }
@@ -239,7 +264,6 @@ class TimeLineDrawer {
 
 export default () => {
   const [timeline, setTimeLine] = useState(MockTimeLine);
-
   useLayoutEffect(() => {
     const timeLineInfo = transForm(timeline, window.devicePixelRatio);
     const startCanvas: HTMLCanvasElement = document.querySelector('#start')! as HTMLCanvasElement;
@@ -277,7 +301,7 @@ export default () => {
           <canvas
             id="start"
             style={{
-              border: '1px solid black',
+              border: '1px solid #ccc',
               width: '100%',
             }}
           ></canvas>
@@ -286,7 +310,7 @@ export default () => {
           <canvas
             id="end"
             style={{
-              border: '1px solid black',
+              border: '1px solid #ccc',
               width: '100%',
             }}
           ></canvas>
@@ -295,6 +319,18 @@ export default () => {
       <Form
         initialValues={timeline}
         onValuesChange={(e) => {
+          for (const key of ['start', 'end']) {
+            if (e[key]) {
+              setTimeLine((v: TimeLine) => ({
+                ...v,
+                [key]: {
+                  ...(v[key as 'start' | 'end'] as TimeLineColor),
+                  ...e[key],
+                },
+              }));
+              return;
+            }
+          }
           setTimeLine((v) => ({
             ...v,
             ...e,
@@ -323,18 +359,42 @@ export default () => {
             ]}
           ></Select>
         </Form.Item>
-        <Form.Item label="边框颜色" name="lineColor">
-          <ColorPicker></ColorPicker>
-        </Form.Item>
-        <Form.Item label="背景色" name="backgroundColor">
-          <ColorPicker></ColorPicker>
-        </Form.Item>
-        <Form.Item label="进度条颜色" name="progressColor">
-          <ColorPicker></ColorPicker>
-        </Form.Item>
-        <Form.Item label="字体颜色" name="fontColor">
-          <ColorPicker></ColorPicker>
-        </Form.Item>
+        <Row>
+          <Form.Item label="开始">
+            <Space>
+              <Form.Item label="分割线颜色" name={['start', 'lineColor']}>
+                <ColorPicker></ColorPicker>
+              </Form.Item>
+              <Form.Item label="边框颜色" name={['start', 'borderColor']}>
+                <ColorPicker></ColorPicker>
+              </Form.Item>
+              <Form.Item label="背景色" name={['start', 'backgroundColor']}>
+                <ColorPicker></ColorPicker>
+              </Form.Item>
+              <Form.Item label="字体颜色" name={['start', 'fontColor']}>
+                <ColorPicker></ColorPicker>
+              </Form.Item>
+            </Space>
+          </Form.Item>
+        </Row>
+        <Row>
+          <Form.Item label="结束">
+            <Space>
+              <Form.Item label="分割线颜色" name={['end', 'lineColor']}>
+                <ColorPicker></ColorPicker>
+              </Form.Item>
+              <Form.Item label="边框颜色" name={['end', 'borderColor']}>
+                <ColorPicker></ColorPicker>
+              </Form.Item>
+              <Form.Item label="背景色" name={['end', 'backgroundColor']}>
+                <ColorPicker></ColorPicker>
+              </Form.Item>
+              <Form.Item label="字体颜色" name={['end', 'fontColor']}>
+                <ColorPicker></ColorPicker>
+              </Form.Item>
+            </Space>
+          </Form.Item>
+        </Row>
       </Form>
       <div></div>
       <button

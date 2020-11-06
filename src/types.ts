@@ -13,8 +13,15 @@ interface VideoInfo {
    */
   time: number;
 }
-
+export interface TimeLineColor {
+  backgroundColor: string;
+  fontColor: string;
+  borderColor: string;
+  lineColor: string;
+}
 export interface TimeLine {
+  start: TimeLineColor;
+  end: TimeLineColor;
   /**
    * 视频的宽度
    */
