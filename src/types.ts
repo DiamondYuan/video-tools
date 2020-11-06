@@ -34,6 +34,10 @@ export interface TimeLine {
    */
   position: 'top' | 'bottom' | 'right' | 'left';
   /**
+   * 字体颜色
+   */
+  fontColor: string;
+  /**
    * 进度条是否逆向
    */
   reverse: boolean;

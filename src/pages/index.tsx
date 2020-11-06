@@ -2,6 +2,7 @@
 import React, { useLayoutEffect, useState } from 'react';
 import { TimeLine, TimeLineInfo, Point } from 'src/types';
 import { Row, Col, Form, Select } from 'antd';
+import ColorPicker from '../componments/ColorPicker';
 
 const MockTimeLine: TimeLine = {
   width: 1920,
@@ -9,6 +10,7 @@ const MockTimeLine: TimeLine = {
   progressColor: '#1890ff',
   backgroundColor: '#f5f5f5',
   lineColor: 'red',
+  fontColor: 'red',
   fontSize: 20,
   size: 40,
   reverse: false,
@@ -156,7 +158,7 @@ class TimeLineDrawer {
     y = y - ((lineCount - 1) / 2) * lineHeight;
     let arrText = text.split('');
     let line = '';
-    this.context.fillStyle = 'red';
+    this.context.fillStyle = this.timeLineInfo.fontColor;
     this.context.font = `${this.timeLineInfo.fontSize}px Arial`;
     this.context.textBaseline = 'middle';
     this.context.textAlign = 'center';
@@ -218,7 +220,7 @@ class TimeLineDrawer {
         this.context.moveTo(pointer.x, pointer.y);
         this.context.lineTo(pointer.x, pointer.y + lineSize);
         this.context.stroke();
-        this.wrapText(video.text, pointer.x - step / 2, lineSize / 2, step);
+        this.wrapText(video.text, pointer.x - step / 2, pointer.y + lineSize / 2, step);
       } else {
         pointer = {
           x: points.topLeft.x,
@@ -241,7 +243,6 @@ export default () => {
   useLayoutEffect(() => {
     const timeLineInfo = transForm(timeline, window.devicePixelRatio);
     const startCanvas: HTMLCanvasElement = document.querySelector('#start')! as HTMLCanvasElement;
-
     startCanvas.setAttribute('width', `${timeLineInfo.width}`);
     startCanvas.setAttribute('height', `${timeLineInfo.height}`);
     const context = startCanvas.getContext('2d')!;
@@ -256,10 +257,10 @@ export default () => {
     new TimeLineDrawer(timeLineInfo, endContext).drawEnd();
   }, [timeline]);
 
-  const handleExport = () => {
-    const canvas: HTMLCanvasElement = document.querySelector('#canvas')! as HTMLCanvasElement;
+  const download = (id: string) => {
+    const canvas: HTMLCanvasElement = document.querySelector(`#${id}`)! as HTMLCanvasElement;
     let dlLink = document.createElement('a');
-    dlLink.download = '1.png';
+    dlLink.download = `${id}.png`;
     dlLink.href = canvas.toDataURL('image/png');
     dlLink.dataset.downloadurl = ['image/png', dlLink.download, dlLink.href].join(':');
     document.body.appendChild(dlLink);
@@ -322,9 +323,28 @@ export default () => {
             ]}
           ></Select>
         </Form.Item>
+        <Form.Item label="边框颜色" name="lineColor">
+          <ColorPicker></ColorPicker>
+        </Form.Item>
+        <Form.Item label="背景色" name="backgroundColor">
+          <ColorPicker></ColorPicker>
+        </Form.Item>
+        <Form.Item label="进度条颜色" name="progressColor">
+          <ColorPicker></ColorPicker>
+        </Form.Item>
+        <Form.Item label="字体颜色" name="fontColor">
+          <ColorPicker></ColorPicker>
+        </Form.Item>
       </Form>
       <div></div>
-      <button onClick={handleExport}>导出</button>
+      <button
+        onClick={() => {
+          download('start');
+          download('end');
+        }}
+      >
+        导出
+      </button>
     </div>
   );
 };
