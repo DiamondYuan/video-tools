@@ -79,7 +79,9 @@ class TimeLineDrawer {
       totalLength = this.timeLineInfo.height;
     }
     let pointer = { x: 0, y: 0 };
-    for (const video of videos) {
+    for (let i = 0; i < videos.length; i++) {
+      const video = videos[i];
+      const isLast = i === videos.length - 1;
       const step = (video.time / totalTime) * totalLength;
       const lineSize = this.timeLineInfo.size;
       if (isRow) {
@@ -87,12 +89,14 @@ class TimeLineDrawer {
           x: pointer.x + step,
           y: points.topLeft.y,
         };
-        this.context.beginPath();
-        this.context.lineWidth = this.timeLineInfo.lineWidth;
-        this.context.strokeStyle = color.lineColor;
-        this.context.moveTo(pointer.x, pointer.y + linePadding);
-        this.context.lineTo(pointer.x, pointer.y + lineSize - linePadding);
-        this.context.stroke();
+        if (!isLast) {
+          this.context.beginPath();
+          this.context.lineWidth = this.timeLineInfo.lineWidth;
+          this.context.strokeStyle = color.lineColor;
+          this.context.moveTo(pointer.x, pointer.y + linePadding);
+          this.context.lineTo(pointer.x, pointer.y + lineSize - linePadding);
+          this.context.stroke();
+        }
         this.wrapText(
           video.text,
           pointer.x - step / 2,
@@ -105,12 +109,14 @@ class TimeLineDrawer {
           x: points.topLeft.x,
           y: pointer.y + step,
         };
-        this.context.beginPath();
-        this.context.lineWidth = this.timeLineInfo.lineWidth;
-        this.context.strokeStyle = color.lineColor;
-        this.context.moveTo(pointer.x + linePadding, pointer.y);
-        this.context.lineTo(pointer.x + lineSize - linePadding, pointer.y);
-        this.context.stroke();
+        if (!isLast) {
+          this.context.beginPath();
+          this.context.lineWidth = this.timeLineInfo.lineWidth;
+          this.context.strokeStyle = color.lineColor;
+          this.context.moveTo(pointer.x + linePadding, pointer.y);
+          this.context.lineTo(pointer.x + lineSize - linePadding, pointer.y);
+          this.context.stroke();
+        }
         this.wrapText(
           video.text,
           points.topLeft.x + lineSize / 2,

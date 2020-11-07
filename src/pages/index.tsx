@@ -1,22 +1,9 @@
 // eslint-disable-next-line no-use-before-define
 import React, { useLayoutEffect, useState } from 'react';
-import { TimeLine, TimeLineInfo, Point, TimeLineColor } from 'src/types';
-
-import {
-  Row,
-  Col,
-  Form,
-  Switch,
-  Slider,
-  Radio,
-  InputNumber,
-  Space,
-  Input,
-  Button,
-  TimePicker,
-} from 'antd';
+import { TimeLine, TimeLineInfo, Point } from 'src/types';
+import { Row, Col, Form, Switch, Slider, Radio, InputNumber, Space, Input, TimePicker } from 'antd';
 import ColorPicker from '../componments/ColorPicker';
-import { MinusCircleOutlined, PlusOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import TimeLineDrawer from '../componments/TimeLineDrawer';
 
@@ -138,6 +125,7 @@ function transForm(timeLine: TimeLine, devicePixelRatio: number): TimeLineInfo {
     },
   };
   let totalTime = 0;
+  // eslint-disable-next-line no-undefined
   timeLine.videos = timeLine.videos.filter((o) => o.text !== undefined && o.time !== undefined);
   for (let i = 0; i < timeLine.videos.length; i++) {
     totalTime = totalTime + timeLine.videos[i].time;
@@ -251,9 +239,8 @@ export default () => {
           <div style={{ height: '100%', background: 'red' }}>
             <canvas id="left" style={{ height: '100%' }}></canvas>
           </div>
-          <div style={{ padding: 8, overflow: 'scroll' }}>
-            <br></br>
-            <Row>
+          <div style={{ padding: 8, overflow: 'scroll', flex: 1 }}>
+            <Row style={{ display: 'none' }}>
               <Col span={12}>
                 <canvas
                   id="start"
@@ -357,20 +344,6 @@ export default () => {
                         />
                       </Space>
                     ))}
-                    <Form.Item>
-                      <Button
-                        type="dashed"
-                        onClick={() =>
-                          add({
-                            time: 0,
-                            text: '',
-                          })
-                        }
-                        icon={<PlusOutlined />}
-                      >
-                        Add field
-                      </Button>
-                    </Form.Item>
                   </>
                 )}
               </Form.List>
