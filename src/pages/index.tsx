@@ -1,11 +1,26 @@
 // eslint-disable-next-line no-use-before-define
 import React, { useLayoutEffect, useState } from 'react';
-import { TimeLine, TimeLineInfo, Point } from 'src/types';
-import { Row, Col, Form, Switch, Slider, Radio, InputNumber, Space, Input, TimePicker } from 'antd';
+import { TimeLine } from 'src/types';
+import {
+  Row,
+  Col,
+  Form,
+  Switch,
+  Slider,
+  Radio,
+  InputNumber,
+  Space,
+  Input,
+  TimePicker,
+  Card,
+  Button,
+  Popover,
+} from 'antd';
 import ColorPicker from '../componments/ColorPicker';
 import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import TimeLineDrawer from '../componments/TimeLineDrawer';
+import { transFormTimeLine } from '../utils/transFormTimeLine';
 
 const MockTimeLine: TimeLine = {
   lineWidth: 2,
@@ -60,92 +75,6 @@ const MockTimeLine: TimeLine = {
   ],
 };
 
-function transForm(timeLine: TimeLine, devicePixelRatio: number): TimeLineInfo {
-  const { position } = timeLine;
-  let pointTopLeft: Point = { x: 0, y: 0 };
-  let pointBottomRight: Point = { x: 0, y: 0 };
-  switch (position) {
-    case 'top': {
-      pointTopLeft = {
-        x: 0,
-        y: 0,
-      };
-      pointBottomRight = {
-        x: timeLine.width * devicePixelRatio,
-        y: devicePixelRatio * timeLine.size,
-      };
-      break;
-    }
-    case 'bottom': {
-      pointTopLeft = {
-        x: 0,
-        y: (timeLine.height - timeLine.size) * devicePixelRatio,
-      };
-      pointBottomRight = {
-        x: timeLine.width * 2,
-        y: timeLine.height * 2,
-      };
-      break;
-    }
-    case 'left': {
-      pointTopLeft = {
-        x: 0,
-        y: 0,
-      };
-      pointBottomRight = {
-        x: timeLine.size * devicePixelRatio,
-        y: devicePixelRatio * timeLine.height,
-      };
-      break;
-    }
-    case 'right': {
-      pointTopLeft = {
-        x: (timeLine.width - timeLine.size) * devicePixelRatio,
-        y: 0,
-      };
-      pointBottomRight = {
-        x: timeLine.width * 2,
-        y: timeLine.height * 2,
-      };
-      break;
-    }
-    default:
-      break;
-  }
-  const points: TimeLineInfo['points'] = {
-    topLeft: pointTopLeft,
-    bottomRight: pointBottomRight,
-    topRight: {
-      x: pointTopLeft.x,
-      y: pointBottomRight.y,
-    },
-    bottomLeft: {
-      x: pointBottomRight.x,
-      y: pointTopLeft.y,
-    },
-  };
-  let totalTime = 0;
-  // eslint-disable-next-line no-undefined
-  timeLine.videos = timeLine.videos.filter((o) => o.text !== undefined && o.time !== undefined);
-  for (let i = 0; i < timeLine.videos.length; i++) {
-    totalTime = totalTime + timeLine.videos[i].time;
-  }
-  const finalVideos = [...timeLine.videos];
-
-  return {
-    ...timeLine,
-    points,
-    totalTime,
-    videos: timeLine.reverse ? finalVideos.reverse() : finalVideos,
-    size: timeLine.size * devicePixelRatio,
-    fontSize: timeLine.fontSize * devicePixelRatio,
-    width: timeLine.width * devicePixelRatio,
-    height: timeLine.height * devicePixelRatio,
-    linePadding: timeLine.linePadding * devicePixelRatio,
-    lineWidth: timeLine.lineWidth * devicePixelRatio,
-  };
-}
-
 const formItemLayout = {
   labelCol: {
     span: 6,
@@ -158,28 +87,33 @@ const formItemLayout = {
 export default () => {
   const [timeline, setTimeLine] = useState(MockTimeLine);
   const [form] = Form.useForm();
+  const [startImage, setStartImage] = useState<string>();
+  const [endImage, setEndImage] = useState<string>();
 
   useLayoutEffect(() => {
-    const timeLineInfo = transForm(timeline, window.devicePixelRatio);
+    const devicePixelRatio = window.devicePixelRatio;
+    const timeLineInfo = transFormTimeLine(timeline, devicePixelRatio);
     const startCanvas: HTMLCanvasElement = document.querySelector('#start')! as HTMLCanvasElement;
     startCanvas.setAttribute('width', `${timeLineInfo.width}`);
     startCanvas.setAttribute('height', `${timeLineInfo.height}`);
     const context = startCanvas.getContext('2d')!;
     context.clearRect(0, 0, timeLineInfo.width, timeLineInfo.height);
     new TimeLineDrawer(timeLineInfo, context).drawStart();
+    setStartImage(startCanvas.toDataURL('image/png'));
     const end: HTMLCanvasElement = document.querySelector('#end')! as HTMLCanvasElement;
     end.setAttribute('width', `${timeLineInfo.width}`);
     end.setAttribute('height', `${timeLineInfo.height}`);
     const endContext = end.getContext('2d')!;
     endContext.clearRect(0, 0, timeLineInfo.width, timeLineInfo.height);
     new TimeLineDrawer(timeLineInfo, endContext).drawEnd();
+    setEndImage(end.toDataURL('image/png'));
 
-    const showTimeLineInfo = transForm(
+    const showTimeLineInfo = transFormTimeLine(
       {
         ...timeline,
         position: 'top',
       },
-      window.devicePixelRatio
+      devicePixelRatio
     );
     const showCanvas: HTMLCanvasElement = document.querySelector('#show')! as HTMLCanvasElement;
     showCanvas.setAttribute('width', `${timeLineInfo.width}`);
@@ -188,12 +122,12 @@ export default () => {
     showContext.clearRect(0, 0, timeLineInfo.width, timeLineInfo.height);
     new TimeLineDrawer(showTimeLineInfo, showContext).drawStart();
 
-    const leftTimeLineInfo = transForm(
+    const leftTimeLineInfo = transFormTimeLine(
       {
         ...timeline,
         position: 'left',
       },
-      window.devicePixelRatio
+      devicePixelRatio
     );
     const leftCanvas: HTMLCanvasElement = document.querySelector('#left')! as HTMLCanvasElement;
     leftCanvas.setAttribute('width', `${timeLineInfo.size}`);
@@ -235,39 +169,17 @@ export default () => {
             style={{ width: '100%', border: '1px solid #ccc', display: 'block' }}
           ></canvas>
         </div>
-        <div style={{ flex: 1, display: 'flex', overflow: 'scroll' }}>
+        <div style={{ flex: 1, display: 'flex', overflow: 'scroll', background: '#f0f2f5' }}>
           <div style={{ height: '100%', background: 'red' }}>
             <canvas id="left" style={{ height: '100%' }}></canvas>
           </div>
-          <div style={{ padding: 8, overflow: 'scroll', flex: 1 }}>
-            <Row style={{ display: 'none' }}>
-              <Col span={12}>
-                <canvas
-                  id="start"
-                  style={{
-                    border: '1px solid #ccc',
-                    maxHeight: '500px',
-                    maxWidth: '100%',
-                  }}
-                ></canvas>
-              </Col>
-              <Col span={12}>
-                <canvas
-                  id="end"
-                  style={{
-                    border: '1px solid #ccc',
-                    maxHeight: '500px',
-                    maxWidth: '100%',
-                  }}
-                ></canvas>
-              </Col>
-            </Row>
+          <div style={{ padding: 16, overflow: 'scroll', flex: 1 }}>
             <Form
+              style={{ height: '100%' }}
               form={form}
               initialValues={timeline}
               onValuesChange={(_e, values) => {
                 setTimeLine((v) => {
-                  console.log('ch');
                   return {
                     ...v,
                     ...values,
@@ -275,173 +187,280 @@ export default () => {
                 });
               }}
             >
-              <Form.List name="videos">
-                {(fields, { add, remove }) => (
-                  <>
-                    {fields.map((field, index) => (
-                      <Space
-                        key={field.key}
-                        style={{ display: 'flex', marginBottom: 8 }}
-                        align="baseline"
+              <Row gutter={8} style={{ height: '100%' }}>
+                <Col span={12} style={{ display: 'flex', flexDirection: 'column' }}>
+                  <Card
+                    title="预览"
+                    extra={[
+                      <Button
+                        key="export"
+                        type="primary"
+                        onClick={() => {
+                          download('start');
+                          download('end');
+                        }}
                       >
-                        <PlusCircleOutlined
-                          onClick={() => {
-                            add(
-                              {
-                                time: 0,
-                                text: '',
-                              },
-                              index
-                            );
-                          }}
-                        />
-                        <Form.Item
-                          {...field}
-                          name={[field.name, 'text']}
-                          fieldKey={[field.fieldKey, 'text']}
+                        导出
+                      </Button>,
+                    ]}
+                  >
+                    <Row gutter={8}>
+                      <Col span={12}>
+                        <Popover
+                          placement="bottomLeft"
+                          content={<img style={{ maxHeight: '50vh' }} src={startImage}></img>}
                         >
-                          <Input />
-                        </Form.Item>
-                        <Form.Item
-                          label="时长"
-                          {...field}
-                          name={[field.name, 'time']}
-                          fieldKey={[field.fieldKey, 'time']}
+                          <canvas
+                            onClick={() => download('start')}
+                            id="start"
+                            style={{
+                              cursor: 'pointer',
+                              border: '1px solid #ccc',
+                              maxHeight: '500px',
+                              maxWidth: '100%',
+                            }}
+                          />
+                        </Popover>
+                      </Col>
+                      <Col span={12}>
+                        <Popover
+                          placement="bottomLeft"
+                          content={<img style={{ maxHeight: '50vh' }} src={endImage}></img>}
                         >
-                          <InputNumber />
-                        </Form.Item>
-                        <TimePicker
-                          showNow={false}
-                          format="HH:mm:ss"
-                          value={getTime(index)}
-                          allowClear={false}
-                          onChange={(e) => {
-                            const diffSeconds = e!.diff(getTime(index - 1), 'seconds');
-                            form.setFields([
-                              {
-                                name: ['videos', field.name, 'time'],
-                                value: diffSeconds,
-                              },
-                            ]);
-                            setTimeLine(form.getFieldsValue());
-                          }}
-                        />
-                        <PlusCircleOutlined
-                          onClick={() => {
-                            add(
-                              {
-                                time: 0,
-                                text: '',
-                              },
-                              index + 1
-                            );
-                          }}
-                        />
-                        <MinusCircleOutlined
-                          onClick={() => {
-                            remove(field.name);
-                          }}
-                        />
-                      </Space>
-                    ))}
-                  </>
-                )}
-              </Form.List>
-              <Form.Item label="分割线距离边缘" name="linePadding">
-                <InputNumber></InputNumber>
-              </Form.Item>
-              <Form.Item label="线宽" name="lineWidth">
-                <InputNumber></InputNumber>
-              </Form.Item>
-              <Form.Item label="屏幕宽度" name="width">
-                <InputNumber></InputNumber>
-              </Form.Item>
-              <Form.Item label="屏幕高度" name="height">
-                <InputNumber></InputNumber>
-              </Form.Item>
-              <Form.Item label="逆转" name="reverse">
-                <Switch></Switch>
-              </Form.Item>
-              <Form.Item label="字体大小" name="fontSize">
-                <Slider tooltipVisible={false}></Slider>
-              </Form.Item>
-              <Form.Item label="时间轴尺寸" name="size">
-                <Slider tooltipVisible={false}></Slider>
-              </Form.Item>
-              <Form.Item label="时间轴位置" name="position">
-                <Radio.Group>
-                  {[
-                    {
-                      label: '顶部',
-                      value: 'top',
-                    },
-                    {
-                      label: '底部',
-                      value: 'bottom',
-                    },
-                    {
-                      label: '左边',
-                      value: 'left',
-                    },
-                    {
-                      label: '右边',
-                      value: 'right',
-                    },
-                  ].map((o) => (
-                    <Radio key={o.value} value={o.value}>
-                      {o.label}
-                    </Radio>
-                  ))}
-                </Radio.Group>
-              </Form.Item>
-              <Row>
-                <Col span={12}>
-                  <Form.Item label="开始">
-                    <Form.Item label="分割线颜色" name={['start', 'lineColor']} {...formItemLayout}>
-                      <ColorPicker></ColorPicker>
-                    </Form.Item>
-                    <Form.Item label="边框颜色" name={['start', 'borderColor']} {...formItemLayout}>
-                      <ColorPicker></ColorPicker>
-                    </Form.Item>
-                    <Form.Item
-                      label="背景色"
-                      name={['start', 'backgroundColor']}
-                      {...formItemLayout}
-                    >
-                      <ColorPicker></ColorPicker>
-                    </Form.Item>
-                    <Form.Item label="字体颜色" name={['start', 'fontColor']} {...formItemLayout}>
-                      <ColorPicker></ColorPicker>
-                    </Form.Item>
-                  </Form.Item>
+                          <canvas
+                            onClick={() => download('end')}
+                            id="end"
+                            style={{
+                              cursor: 'pointer',
+                              border: '1px solid #ccc',
+                              maxHeight: '500px',
+                              maxWidth: '100%',
+                            }}
+                          />
+                        </Popover>
+                      </Col>
+                    </Row>
+                  </Card>
+                  <Card style={{ flex: 1, marginTop: 16 }} title="信息">
+                    <Form.List name="videos">
+                      {(fields, { add, remove }) => (
+                        <>
+                          {fields.map((field, index) => (
+                            <Space
+                              key={field.key}
+                              style={{ display: 'flex', marginBottom: 8 }}
+                              align="baseline"
+                            >
+                              <PlusCircleOutlined
+                                onClick={() => {
+                                  add(
+                                    {
+                                      time: 0,
+                                      text: '',
+                                    },
+                                    index
+                                  );
+                                }}
+                              />
+                              <Form.Item
+                                {...field}
+                                name={[field.name, 'text']}
+                                fieldKey={[field.fieldKey, 'text']}
+                              >
+                                <Input />
+                              </Form.Item>
+                              <Form.Item
+                                label="时长"
+                                {...field}
+                                name={[field.name, 'time']}
+                                fieldKey={[field.fieldKey, 'time']}
+                              >
+                                <InputNumber />
+                              </Form.Item>
+                              <TimePicker
+                                showNow={false}
+                                format="HH:mm:ss"
+                                value={getTime(index)}
+                                allowClear={false}
+                                onChange={(e) => {
+                                  const diffSeconds = e!.diff(getTime(index - 1), 'seconds');
+                                  form.setFields([
+                                    {
+                                      name: ['videos', field.name, 'time'],
+                                      value: diffSeconds,
+                                    },
+                                  ]);
+                                  setTimeLine(form.getFieldsValue());
+                                }}
+                              />
+                              <PlusCircleOutlined
+                                onClick={() => {
+                                  add(
+                                    {
+                                      time: 0,
+                                      text: '',
+                                    },
+                                    index + 1
+                                  );
+                                }}
+                              />
+                              <MinusCircleOutlined
+                                onClick={() => {
+                                  remove(field.name);
+                                }}
+                              />
+                            </Space>
+                          ))}
+                        </>
+                      )}
+                    </Form.List>
+                  </Card>
                 </Col>
-                <Col span={12}>
-                  <Form.Item label="结束">
-                    <Form.Item label="分割线颜色" name={['end', 'lineColor']} {...formItemLayout}>
-                      <ColorPicker></ColorPicker>
+                <Col span={12} style={{ height: '100%' }}>
+                  <Card title="配置" style={{ height: '100%' }}>
+                    <Form.Item label="分割线">
+                      <Row>
+                        <Col span={4}>
+                          <Form.Item label="距离边缘" name="linePadding">
+                            <InputNumber></InputNumber>
+                          </Form.Item>
+                        </Col>
+                        <Col span={4}>
+                          <Form.Item label="线宽" name="lineWidth">
+                            <InputNumber></InputNumber>
+                          </Form.Item>
+                        </Col>
+                      </Row>
                     </Form.Item>
-                    <Form.Item label="边框颜色" name={['end', 'borderColor']} {...formItemLayout}>
-                      <ColorPicker></ColorPicker>
+                    <Form.Item label="时间轴">
+                      <Row>
+                        <Col span={4}>
+                          <Form.Item label="翻转" name="reverse">
+                            <Switch></Switch>
+                          </Form.Item>
+                        </Col>
+                        <Col span={6}>
+                          <Form.Item label="尺寸" name="size">
+                            <Slider tooltipVisible={true}></Slider>
+                          </Form.Item>
+                        </Col>
+                        <Col span={6}>
+                          <Form.Item label="字体大小" name="fontSize">
+                            <Slider tooltipVisible={true}></Slider>
+                          </Form.Item>
+                        </Col>
+                        <Col span={6}>
+                          <Form.Item label="时间轴位置" name="position">
+                            <Radio.Group>
+                              {[
+                                {
+                                  label: '顶部',
+                                  value: 'top',
+                                },
+                                {
+                                  label: '底部',
+                                  value: 'bottom',
+                                },
+                                {
+                                  label: '左边',
+                                  value: 'left',
+                                },
+                                {
+                                  label: '右边',
+                                  value: 'right',
+                                },
+                              ].map((o) => (
+                                <Radio key={o.value} value={o.value}>
+                                  {o.label}
+                                </Radio>
+                              ))}
+                            </Radio.Group>
+                          </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                          <Form.Item label="开始">
+                            <Form.Item
+                              label="分割线颜色"
+                              name={['start', 'lineColor']}
+                              {...formItemLayout}
+                            >
+                              <ColorPicker></ColorPicker>
+                            </Form.Item>
+                            <Form.Item
+                              label="边框颜色"
+                              name={['start', 'borderColor']}
+                              {...formItemLayout}
+                            >
+                              <ColorPicker></ColorPicker>
+                            </Form.Item>
+                            <Form.Item
+                              label="背景色"
+                              name={['start', 'backgroundColor']}
+                              {...formItemLayout}
+                            >
+                              <ColorPicker></ColorPicker>
+                            </Form.Item>
+                            <Form.Item
+                              label="字体颜色"
+                              name={['start', 'fontColor']}
+                              {...formItemLayout}
+                            >
+                              <ColorPicker></ColorPicker>
+                            </Form.Item>
+                          </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                          <Form.Item label="结束">
+                            <Form.Item
+                              label="分割线颜色"
+                              name={['end', 'lineColor']}
+                              {...formItemLayout}
+                            >
+                              <ColorPicker></ColorPicker>
+                            </Form.Item>
+                            <Form.Item
+                              label="边框颜色"
+                              name={['end', 'borderColor']}
+                              {...formItemLayout}
+                            >
+                              <ColorPicker></ColorPicker>
+                            </Form.Item>
+                            <Form.Item
+                              label="背景色"
+                              name={['end', 'backgroundColor']}
+                              {...formItemLayout}
+                            >
+                              <ColorPicker></ColorPicker>
+                            </Form.Item>
+                            <Form.Item
+                              label="字体颜色"
+                              name={['end', 'fontColor']}
+                              {...formItemLayout}
+                            >
+                              <ColorPicker></ColorPicker>
+                            </Form.Item>
+                          </Form.Item>
+                        </Col>
+                      </Row>
                     </Form.Item>
-                    <Form.Item label="背景色" name={['end', 'backgroundColor']} {...formItemLayout}>
-                      <ColorPicker></ColorPicker>
+                    <Form.Item label="屏幕尺寸">
+                      <Row>
+                        <Col span={4}>
+                          <Form.Item label="屏幕宽度" name="width">
+                            <InputNumber></InputNumber>
+                          </Form.Item>
+                        </Col>
+                        <Col span={4}>
+                          <Form.Item label="屏幕高度" name="height">
+                            <InputNumber></InputNumber>
+                          </Form.Item>
+                        </Col>
+                      </Row>
                     </Form.Item>
-                    <Form.Item label="字体颜色" name={['end', 'fontColor']} {...formItemLayout}>
-                      <ColorPicker></ColorPicker>
-                    </Form.Item>
-                  </Form.Item>
+                  </Card>
                 </Col>
               </Row>
             </Form>
-            <div></div>
-            <button
-              onClick={() => {
-                download('start');
-                download('end');
-              }}
-            >
-              导出
-            </button>
           </div>
         </div>
       </div>
