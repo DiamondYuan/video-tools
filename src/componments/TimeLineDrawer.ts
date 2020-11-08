@@ -81,6 +81,9 @@ class TimeLineDrawer {
     let pointer = { x: 0, y: 0 };
     for (let i = 0; i < videos.length; i++) {
       const video = videos[i];
+      if (!video.text || video.time <= 0) {
+        continue;
+      }
       const isLast = i === videos.length - 1;
       const step = (video.time / totalTime) * totalLength;
       const lineSize = this.timeLineInfo.size;

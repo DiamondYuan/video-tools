@@ -68,6 +68,9 @@ function transFormTimeLine(timeLine: TimeLine, devicePixelRatio: number): TimeLi
   // eslint-disable-next-line no-undefined
   timeLine.videos = timeLine.videos.filter((o) => o.text !== undefined && o.time !== undefined);
   for (let i = 0; i < timeLine.videos.length; i++) {
+    if (!timeLine.videos[i].text) {
+      continue;
+    }
     totalTime = totalTime + timeLine.videos[i].time;
   }
   const finalVideos = [...timeLine.videos];
