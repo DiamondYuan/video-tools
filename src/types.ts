@@ -22,7 +22,11 @@ export interface TimeLineColor {
   borderColor: string;
   lineColor: string;
 }
+
+export const MAGIC_KEY = 'DiamondYuan Timeline';
 export interface TimeLine {
+  magicKey: string;
+  name: string;
   lineWidth: number;
   linePadding: number;
   start: TimeLineColor;

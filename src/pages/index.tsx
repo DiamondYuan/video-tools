@@ -1,6 +1,6 @@
 // eslint-disable-next-line no-use-before-define
-import React, { useLayoutEffect, useState } from 'react';
-import { TimeLine } from 'src/types';
+import React, { useLayoutEffect, useState, useEffect } from 'react';
+import { MAGIC_KEY, TimeLine } from '../types';
 import {
   Row,
   Col,
@@ -15,14 +15,20 @@ import {
   Card,
   Button,
   Popover,
+  Upload,
+  message,
 } from 'antd';
 import ColorPicker from '../componments/ColorPicker';
 import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import TimeLineDrawer from '../componments/TimeLineDrawer';
 import { transFormTimeLine } from '../utils/transFormTimeLine';
+import { isEqual } from 'lodash';
+import { useLocalStorageState } from '@shihengtech/hooks';
 
 const MockTimeLine: TimeLine = {
+  magicKey: MAGIC_KEY,
+  name: '默认配置',
   lineWidth: 2,
   linePadding: 2,
   start: {
@@ -84,11 +90,28 @@ const formItemLayout = {
   },
 };
 
+function loadFile(fileName: string, content: string) {
+  let aLink = document.createElement('a');
+  let blob = new Blob([content], {
+    type: 'text/plain',
+  });
+  aLink.download = fileName;
+  aLink.href = URL.createObjectURL(blob);
+  aLink.click();
+  URL.revokeObjectURL(aLink.href);
+}
+
 export default () => {
-  const [timeline, setTimeLine] = useState(MockTimeLine);
+  const [timeline, setTimeLine] = useLocalStorageState<TimeLine>('timeline', MockTimeLine);
   const [form] = Form.useForm();
   const [startImage, setStartImage] = useState<string>();
   const [endImage, setEndImage] = useState<string>();
+
+  useEffect(() => {
+    if (!isEqual(form.getFieldsValue(), timeline)) {
+      form.setFieldsValue(timeline);
+    }
+  }, [timeline, form]);
 
   useLayoutEffect(() => {
     const devicePixelRatio = window.devicePixelRatio;
@@ -155,7 +178,7 @@ export default () => {
     let total = 0;
 
     for (let i = 0; i <= index; i++) {
-      total = timeline.videos[i].time + total;
+      total = form.getFieldValue('videos')[i].time + total;
     }
     return moment().startOf('day').add(total, 'second');
   };
@@ -200,8 +223,46 @@ export default () => {
                           download('end');
                         }}
                       >
-                        导出
+                        导出时间轴
                       </Button>,
+                      <Button
+                        style={{ marginLeft: 8 }}
+                        key="exportConfig"
+                        type="primary"
+                        onClick={() => {
+                          loadFile(`${timeline.name}.json`, JSON.stringify(timeline, null, 2));
+                        }}
+                      >
+                        导出配置
+                      </Button>,
+                      <Upload
+                        key="upload"
+                        itemRender={() => null}
+                        beforeUpload={(file) => {
+                          console.log(file);
+                          const fileReader = new FileReader();
+                          fileReader.onload = (e) => {
+                            if (typeof e?.target?.result !== 'string') {
+                              return;
+                            }
+                            const result = e?.target?.result;
+                            try {
+                              const parsedResult: TimeLine = JSON.parse(result);
+                              if (parsedResult.magicKey !== MAGIC_KEY) {
+                                message.error('配置文件格式不正确');
+                                return;
+                              }
+                              setTimeLine(JSON.parse(result));
+                            } catch (_error) {
+                              message.error('解析配置失败');
+                            }
+                          };
+                          fileReader.readAsText(file, 'utf-8');
+                          return false;
+                        }}
+                      >
+                        <Button style={{ marginLeft: 8 }}>导入配置</Button>
+                      </Upload>,
                     ]}
                   >
                     <Row gutter={8}>
@@ -317,7 +378,15 @@ export default () => {
                   </Card>
                 </Col>
                 <Col span={12} style={{ height: '100%' }}>
-                  <Card title="配置" style={{ height: '100%' }}>
+                  <Card
+                    title="配置"
+                    style={{ height: '100%' }}
+                    extra={
+                      <Form.Item name="name">
+                        <Input></Input>
+                      </Form.Item>
+                    }
+                  >
                     <Form.Item label="分割线">
                       <Row>
                         <Col span={4}>
