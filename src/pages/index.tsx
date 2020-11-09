@@ -82,12 +82,12 @@ const MockTimeLine: TimeLine = {
   ],
 };
 
-const formItemLayout = {
+const colorFormItemLayout = {
   labelCol: {
-    span: 6,
+    span: 8,
   },
   wrapperCol: {
-    span: 18,
+    span: 16,
   },
 };
 
@@ -212,7 +212,15 @@ export default () => {
               }}
             >
               <Row gutter={8} style={{ height: '100%' }}>
-                <Col span={12} style={{ display: 'flex', flexDirection: 'column' }}>
+                <Col
+                  span={12}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: '100%',
+                    overflow: 'hidden',
+                  }}
+                >
                   <Card
                     title="预览"
                     extra={[
@@ -303,7 +311,7 @@ export default () => {
                       </Col>
                     </Row>
                   </Card>
-                  <Card style={{ flex: 1, marginTop: 16 }} title="信息">
+                  <Card style={{ flex: 1, marginTop: 16, overflow: 'scroll' }} title="信息">
                     <Form.List name="videos">
                       {(fields, { add, remove }) => (
                         <>
@@ -382,7 +390,7 @@ export default () => {
                 <Col span={12} style={{ height: '100%' }}>
                   <Card
                     title="配置"
-                    style={{ height: '100%' }}
+                    style={{ height: '100%', overflow: 'scroll' }}
                     extra={
                       <Form.Item name="name">
                         <Input></Input>
@@ -391,12 +399,12 @@ export default () => {
                   >
                     <Form.Item label="分割线">
                       <Row>
-                        <Col span={4}>
+                        <Col span={12}>
                           <Form.Item label="距离边缘" name="linePadding">
                             <InputNumber></InputNumber>
                           </Form.Item>
                         </Col>
-                        <Col span={4}>
+                        <Col span={12}>
                           <Form.Item label="线宽" name="lineWidth">
                             <InputNumber></InputNumber>
                           </Form.Item>
@@ -405,22 +413,22 @@ export default () => {
                     </Form.Item>
                     <Form.Item label="时间轴">
                       <Row>
-                        <Col span={4}>
-                          <Form.Item label="翻转" name="reverse">
-                            <Switch></Switch>
-                          </Form.Item>
-                        </Col>
-                        <Col span={6}>
+                        <Col span={12}>
                           <Form.Item label="尺寸" name="size">
                             <Slider tooltipVisible={true}></Slider>
                           </Form.Item>
                         </Col>
-                        <Col span={6}>
+                        <Col span={12}>
                           <Form.Item label="字体大小" name="fontSize">
                             <Slider tooltipVisible={true}></Slider>
                           </Form.Item>
                         </Col>
                         <Col span={6}>
+                          <Form.Item label="翻转" name="reverse">
+                            <Switch></Switch>
+                          </Form.Item>
+                        </Col>
+                        <Col span={18}>
                           <Form.Item label="时间轴位置" name="position">
                             <Radio.Group>
                               {[
@@ -453,28 +461,28 @@ export default () => {
                             <Form.Item
                               label="分割线颜色"
                               name={['start', 'lineColor']}
-                              {...formItemLayout}
+                              {...colorFormItemLayout}
                             >
                               <ColorPicker></ColorPicker>
                             </Form.Item>
                             <Form.Item
                               label="边框颜色"
                               name={['start', 'borderColor']}
-                              {...formItemLayout}
+                              {...colorFormItemLayout}
                             >
                               <ColorPicker></ColorPicker>
                             </Form.Item>
                             <Form.Item
                               label="背景色"
                               name={['start', 'backgroundColor']}
-                              {...formItemLayout}
+                              {...colorFormItemLayout}
                             >
                               <ColorPicker></ColorPicker>
                             </Form.Item>
                             <Form.Item
                               label="字体颜色"
                               name={['start', 'fontColor']}
-                              {...formItemLayout}
+                              {...colorFormItemLayout}
                             >
                               <ColorPicker></ColorPicker>
                             </Form.Item>
@@ -485,28 +493,28 @@ export default () => {
                             <Form.Item
                               label="分割线颜色"
                               name={['end', 'lineColor']}
-                              {...formItemLayout}
+                              {...colorFormItemLayout}
                             >
                               <ColorPicker></ColorPicker>
                             </Form.Item>
                             <Form.Item
                               label="边框颜色"
                               name={['end', 'borderColor']}
-                              {...formItemLayout}
+                              {...colorFormItemLayout}
                             >
                               <ColorPicker></ColorPicker>
                             </Form.Item>
                             <Form.Item
                               label="背景色"
                               name={['end', 'backgroundColor']}
-                              {...formItemLayout}
+                              {...colorFormItemLayout}
                             >
                               <ColorPicker></ColorPicker>
                             </Form.Item>
                             <Form.Item
                               label="字体颜色"
                               name={['end', 'fontColor']}
-                              {...formItemLayout}
+                              {...colorFormItemLayout}
                             >
                               <ColorPicker></ColorPicker>
                             </Form.Item>
@@ -516,12 +524,12 @@ export default () => {
                     </Form.Item>
                     <Form.Item label="屏幕尺寸">
                       <Row>
-                        <Col span={4}>
+                        <Col span={8}>
                           <Form.Item label="屏幕宽度" name="width">
                             <InputNumber></InputNumber>
                           </Form.Item>
                         </Col>
-                        <Col span={4}>
+                        <Col span={8}>
                           <Form.Item label="屏幕高度" name="height">
                             <InputNumber></InputNumber>
                           </Form.Item>
