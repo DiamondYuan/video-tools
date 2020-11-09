@@ -1,7 +1,7 @@
 import { TimeLine, TimeLineInfo, Point } from 'src/types';
 
-function transFormTimeLine(timeLine: TimeLine, devicePixelRatio: number): TimeLineInfo {
-  const { position } = timeLine;
+function transFormTimeLine(timeLine: TimeLine): TimeLineInfo {
+  const { position, devicePixelRatio } = timeLine;
   let pointTopLeft: Point = { x: 0, y: 0 };
   let pointBottomRight: Point = { x: 0, y: 0 };
   switch (position) {

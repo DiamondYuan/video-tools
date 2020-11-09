@@ -116,8 +116,7 @@ export default () => {
   }, [timeline, form]);
 
   useLayoutEffect(() => {
-    const devicePixelRatio = timeline.devicePixelRatio;
-    const timeLineInfo = transFormTimeLine(timeline, devicePixelRatio);
+    const timeLineInfo = transFormTimeLine(timeline);
     const startCanvas: HTMLCanvasElement = document.querySelector('#start')! as HTMLCanvasElement;
     startCanvas.setAttribute('width', `${timeLineInfo.width}`);
     startCanvas.setAttribute('height', `${timeLineInfo.height}`);
@@ -133,13 +132,10 @@ export default () => {
     new TimeLineDrawer(timeLineInfo, endContext).drawEnd();
     setEndImage(end.toDataURL('image/png'));
 
-    const showTimeLineInfo = transFormTimeLine(
-      {
-        ...timeline,
-        position: 'top',
-      },
-      devicePixelRatio
-    );
+    const showTimeLineInfo = transFormTimeLine({
+      ...timeline,
+      position: 'top',
+    });
     const showCanvas: HTMLCanvasElement = document.querySelector('#show')! as HTMLCanvasElement;
     showCanvas.setAttribute('width', `${timeLineInfo.width}`);
     showCanvas.setAttribute('height', `${timeLineInfo.size}`);
@@ -147,13 +143,10 @@ export default () => {
     showContext.clearRect(0, 0, timeLineInfo.width, timeLineInfo.height);
     new TimeLineDrawer(showTimeLineInfo, showContext).drawStart();
 
-    const leftTimeLineInfo = transFormTimeLine(
-      {
-        ...timeline,
-        position: 'left',
-      },
-      devicePixelRatio
-    );
+    const leftTimeLineInfo = transFormTimeLine({
+      ...timeline,
+      position: 'left',
+    });
     const leftCanvas: HTMLCanvasElement = document.querySelector('#left')! as HTMLCanvasElement;
     leftCanvas.setAttribute('width', `${timeLineInfo.size}`);
     leftCanvas.setAttribute('height', `${timeLineInfo.height}`);
