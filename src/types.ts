@@ -25,6 +25,7 @@ export interface TimeLineColor {
 
 export const MAGIC_KEY = 'DiamondYuan Timeline';
 export interface TimeLine {
+  devicePixelRatio: number;
   magicKey: string;
   name: string;
   lineWidth: number;

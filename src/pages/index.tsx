@@ -28,6 +28,7 @@ import { useLocalStorageState } from '@shihengtech/hooks';
 import styles from './index.less';
 
 const MockTimeLine: TimeLine = {
+  devicePixelRatio: window.devicePixelRatio,
   magicKey: MAGIC_KEY,
   name: '默认配置',
   lineWidth: 2,
@@ -115,7 +116,7 @@ export default () => {
   }, [timeline, form]);
 
   useLayoutEffect(() => {
-    const devicePixelRatio = window.devicePixelRatio;
+    const devicePixelRatio = timeline.devicePixelRatio;
     const timeLineInfo = transFormTimeLine(timeline, devicePixelRatio);
     const startCanvas: HTMLCanvasElement = document.querySelector('#start')! as HTMLCanvasElement;
     startCanvas.setAttribute('width', `${timeLineInfo.width}`);
@@ -531,6 +532,11 @@ export default () => {
                         </Col>
                         <Col span={8}>
                           <Form.Item label="屏幕高度" name="height">
+                            <InputNumber></InputNumber>
+                          </Form.Item>
+                        </Col>
+                        <Col span={8}>
+                          <Form.Item label="缩放比" name="devicePixelRatio">
                             <InputNumber></InputNumber>
                           </Form.Item>
                         </Col>

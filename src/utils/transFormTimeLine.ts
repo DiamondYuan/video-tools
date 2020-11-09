@@ -22,8 +22,8 @@ function transFormTimeLine(timeLine: TimeLine, devicePixelRatio: number): TimeLi
         y: (timeLine.height - timeLine.size) * devicePixelRatio,
       };
       pointBottomRight = {
-        x: timeLine.width * 2,
-        y: timeLine.height * 2,
+        x: timeLine.width * devicePixelRatio,
+        y: timeLine.height * devicePixelRatio,
       };
       break;
     }
@@ -44,8 +44,8 @@ function transFormTimeLine(timeLine: TimeLine, devicePixelRatio: number): TimeLi
         y: 0,
       };
       pointBottomRight = {
-        x: timeLine.width * 2,
-        y: timeLine.height * 2,
+        x: timeLine.width * devicePixelRatio,
+        y: timeLine.height * devicePixelRatio,
       };
       break;
     }
