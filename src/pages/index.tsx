@@ -26,6 +26,7 @@ import { transFormTimeLine } from '../utils/transFormTimeLine';
 import { isEqual } from 'lodash';
 import { useLocalStorageState } from '@shihengtech/hooks';
 import styles from './index.less';
+import { useDebounceFn } from 'ahooks';
 
 const MockTimeLine: TimeLine = {
   devicePixelRatio: window.devicePixelRatio,
@@ -115,45 +116,52 @@ export default () => {
     }
   }, [timeline, form]);
 
+  const { run } = useDebounceFn(
+    () => {
+      const timeLineInfo = transFormTimeLine(timeline);
+      const startCanvas: HTMLCanvasElement = document.querySelector('#start')! as HTMLCanvasElement;
+      startCanvas.setAttribute('width', `${timeLineInfo.width}`);
+      startCanvas.setAttribute('height', `${timeLineInfo.height}`);
+      const context = startCanvas.getContext('2d')!;
+      context.clearRect(0, 0, timeLineInfo.width, timeLineInfo.height);
+      new TimeLineDrawer(timeLineInfo, context).drawStart();
+      setStartImage(startCanvas.toDataURL('image/png'));
+      const end: HTMLCanvasElement = document.querySelector('#end')! as HTMLCanvasElement;
+      end.setAttribute('width', `${timeLineInfo.width}`);
+      end.setAttribute('height', `${timeLineInfo.height}`);
+      const endContext = end.getContext('2d')!;
+      endContext.clearRect(0, 0, timeLineInfo.width, timeLineInfo.height);
+      new TimeLineDrawer(timeLineInfo, endContext).drawEnd();
+      setEndImage(end.toDataURL('image/png'));
+      const showTimeLineInfo = transFormTimeLine({
+        ...timeline,
+        position: 'top',
+      });
+      const showCanvas: HTMLCanvasElement = document.querySelector('#show')! as HTMLCanvasElement;
+      showCanvas.setAttribute('width', `${timeLineInfo.width}`);
+      showCanvas.setAttribute('height', `${timeLineInfo.size}`);
+      const showContext = showCanvas.getContext('2d')!;
+      showContext.clearRect(0, 0, timeLineInfo.width, timeLineInfo.height);
+      new TimeLineDrawer(showTimeLineInfo, showContext).drawStart();
+      const leftTimeLineInfo = transFormTimeLine({
+        ...timeline,
+        position: 'left',
+      });
+      const leftCanvas: HTMLCanvasElement = document.querySelector('#left')! as HTMLCanvasElement;
+      leftCanvas.setAttribute('width', `${timeLineInfo.size}`);
+      leftCanvas.setAttribute('height', `${timeLineInfo.height}`);
+      const leftContext = leftCanvas.getContext('2d')!;
+      leftContext.clearRect(0, 0, timeLineInfo.width, timeLineInfo.height);
+      new TimeLineDrawer(leftTimeLineInfo, leftContext).drawStart();
+    },
+    {
+      wait: 300,
+    }
+  );
+
   useLayoutEffect(() => {
-    const timeLineInfo = transFormTimeLine(timeline);
-    const startCanvas: HTMLCanvasElement = document.querySelector('#start')! as HTMLCanvasElement;
-    startCanvas.setAttribute('width', `${timeLineInfo.width}`);
-    startCanvas.setAttribute('height', `${timeLineInfo.height}`);
-    const context = startCanvas.getContext('2d')!;
-    context.clearRect(0, 0, timeLineInfo.width, timeLineInfo.height);
-    new TimeLineDrawer(timeLineInfo, context).drawStart();
-    setStartImage(startCanvas.toDataURL('image/png'));
-    const end: HTMLCanvasElement = document.querySelector('#end')! as HTMLCanvasElement;
-    end.setAttribute('width', `${timeLineInfo.width}`);
-    end.setAttribute('height', `${timeLineInfo.height}`);
-    const endContext = end.getContext('2d')!;
-    endContext.clearRect(0, 0, timeLineInfo.width, timeLineInfo.height);
-    new TimeLineDrawer(timeLineInfo, endContext).drawEnd();
-    setEndImage(end.toDataURL('image/png'));
-
-    const showTimeLineInfo = transFormTimeLine({
-      ...timeline,
-      position: 'top',
-    });
-    const showCanvas: HTMLCanvasElement = document.querySelector('#show')! as HTMLCanvasElement;
-    showCanvas.setAttribute('width', `${timeLineInfo.width}`);
-    showCanvas.setAttribute('height', `${timeLineInfo.size}`);
-    const showContext = showCanvas.getContext('2d')!;
-    showContext.clearRect(0, 0, timeLineInfo.width, timeLineInfo.height);
-    new TimeLineDrawer(showTimeLineInfo, showContext).drawStart();
-
-    const leftTimeLineInfo = transFormTimeLine({
-      ...timeline,
-      position: 'left',
-    });
-    const leftCanvas: HTMLCanvasElement = document.querySelector('#left')! as HTMLCanvasElement;
-    leftCanvas.setAttribute('width', `${timeLineInfo.size}`);
-    leftCanvas.setAttribute('height', `${timeLineInfo.height}`);
-    const leftContext = leftCanvas.getContext('2d')!;
-    leftContext.clearRect(0, 0, timeLineInfo.width, timeLineInfo.height);
-    new TimeLineDrawer(leftTimeLineInfo, leftContext).drawStart();
-  }, [timeline]);
+    run();
+  }, [timeline, run]);
 
   const download = (id: string) => {
     const canvas: HTMLCanvasElement = document.querySelector(`#${id}`)! as HTMLCanvasElement;
@@ -197,6 +205,7 @@ export default () => {
               form={form}
               initialValues={timeline}
               onValuesChange={(_e, values) => {
+                values.videos = values.videos.filter((o: any) => typeof o.time === 'number');
                 setTimeLine((v) => {
                   return {
                     ...v,
@@ -242,7 +251,6 @@ export default () => {
                         key="upload"
                         itemRender={() => null}
                         beforeUpload={(file) => {
-                          console.log(file);
                           const fileReader = new FileReader();
                           fileReader.onload = (e) => {
                             if (typeof e?.target?.result !== 'string') {
@@ -307,77 +315,79 @@ export default () => {
                   </Card>
                   <Card style={{ flex: 1, marginTop: 16, overflow: 'scroll' }} title="信息">
                     <Form.List name="videos">
-                      {(fields, { add, remove }) => (
-                        <>
-                          {fields.map((field, index) => (
-                            <Space
-                              key={field.key}
-                              style={{ display: 'flex' }}
-                              align="baseline"
-                              className={styles.videos}
-                            >
-                              <PlusCircleOutlined
-                                onClick={() => {
-                                  add(
-                                    {
-                                      time: 0,
-                                      text: '',
-                                    },
-                                    index
-                                  );
-                                }}
-                              />
-                              <Form.Item
-                                {...field}
-                                name={[field.name, 'text']}
-                                fieldKey={[field.fieldKey, 'text']}
+                      {(fields, { add, remove }) => {
+                        return (
+                          <>
+                            {fields.map((field, index) => (
+                              <Space
+                                key={field.key}
+                                style={{ display: 'flex' }}
+                                align="baseline"
+                                className={styles.videos}
                               >
-                                <Input />
-                              </Form.Item>
-                              <Form.Item
-                                label="时长"
-                                {...field}
-                                name={[field.name, 'time']}
-                                fieldKey={[field.fieldKey, 'time']}
-                              >
-                                <InputNumber />
-                              </Form.Item>
-                              <TimePicker
-                                showNow={false}
-                                format="HH:mm:ss"
-                                value={getTime(index)}
-                                allowClear={false}
-                                onChange={(e) => {
-                                  const diffSeconds = e!.diff(getTime(index - 1), 'seconds');
-                                  form.setFields([
-                                    {
-                                      name: ['videos', field.name, 'time'],
-                                      value: diffSeconds,
-                                    },
-                                  ]);
-                                  setTimeLine(form.getFieldsValue());
-                                }}
-                              />
-                              <PlusCircleOutlined
-                                onClick={() => {
-                                  add(
-                                    {
-                                      time: 0,
-                                      text: '',
-                                    },
-                                    index + 1
-                                  );
-                                }}
-                              />
-                              <MinusCircleOutlined
-                                onClick={() => {
-                                  remove(field.name);
-                                }}
-                              />
-                            </Space>
-                          ))}
-                        </>
-                      )}
+                                <PlusCircleOutlined
+                                  onClick={() => {
+                                    add(
+                                      {
+                                        time: 0,
+                                        text: '',
+                                      },
+                                      index
+                                    );
+                                  }}
+                                />
+                                <Form.Item
+                                  {...field}
+                                  name={[field.name, 'text']}
+                                  fieldKey={[field.fieldKey, 'text']}
+                                >
+                                  <Input />
+                                </Form.Item>
+                                <Form.Item
+                                  label="时长"
+                                  {...field}
+                                  name={[field.name, 'time']}
+                                  fieldKey={[field.fieldKey, 'time']}
+                                >
+                                  <InputNumber />
+                                </Form.Item>
+                                <TimePicker
+                                  showNow={false}
+                                  format="HH:mm:ss"
+                                  value={getTime(index)}
+                                  allowClear={false}
+                                  onChange={(e) => {
+                                    const diffSeconds = e!.diff(getTime(index - 1), 'seconds');
+                                    form.setFields([
+                                      {
+                                        name: ['videos', field.name, 'time'],
+                                        value: diffSeconds,
+                                      },
+                                    ]);
+                                    setTimeLine(form.getFieldsValue());
+                                  }}
+                                />
+                                <PlusCircleOutlined
+                                  onClick={() => {
+                                    add(
+                                      {
+                                        time: 0,
+                                        text: '',
+                                      },
+                                      index + 1
+                                    );
+                                  }}
+                                />
+                                <MinusCircleOutlined
+                                  onClick={() => {
+                                    remove(field.name);
+                                  }}
+                                />
+                              </Space>
+                            ))}
+                          </>
+                        );
+                      }}
                     </Form.List>
                   </Card>
                 </Col>
