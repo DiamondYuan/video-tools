@@ -25,6 +25,7 @@ import TimeLineDrawer from '../componments/TimeLineDrawer';
 import { transFormTimeLine } from '../utils/transFormTimeLine';
 import { isEqual } from 'lodash';
 import { useLocalStorageState } from '@shihengtech/hooks';
+import styles from './index.less';
 
 const MockTimeLine: TimeLine = {
   magicKey: MAGIC_KEY,
@@ -309,8 +310,9 @@ export default () => {
                           {fields.map((field, index) => (
                             <Space
                               key={field.key}
-                              style={{ display: 'flex', marginBottom: 8 }}
+                              style={{ display: 'flex' }}
                               align="baseline"
+                              className={styles.videos}
                             >
                               <PlusCircleOutlined
                                 onClick={() => {
