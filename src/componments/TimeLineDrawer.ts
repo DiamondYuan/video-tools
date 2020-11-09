@@ -12,15 +12,17 @@ class TimeLineDrawer {
   }
   private drawBackground(color: TimeLineColor) {
     const points = this.timeLineInfo.points;
+    this.context.beginPath();
     this.context.fillStyle = color.backgroundColor;
-    this.context.strokeStyle = color.borderColor;
-    this.context.lineWidth = 2;
     this.context.moveTo(points.topLeft.x, points.topLeft.y);
     this.context.lineTo(points.topRight.x, points.topRight.y);
     this.context.lineTo(points.bottomRight.x, points.bottomRight.y);
     this.context.lineTo(points.bottomLeft.x, points.bottomLeft.y);
-    this.context.stroke();
+    this.context.lineTo(points.topLeft.x, points.topLeft.y);
     this.context.fill();
+    this.context.lineWidth = 2;
+    this.context.strokeStyle = color.borderColor;
+    this.context.stroke();
   }
 
   private wrapText(text: string, x: number, y: number, maxWidth: number, color: string) {
