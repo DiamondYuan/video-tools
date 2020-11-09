@@ -24,9 +24,8 @@ import moment from 'moment';
 import TimeLineDrawer from '../componments/TimeLineDrawer';
 import { transFormTimeLine } from '../utils/transFormTimeLine';
 import { isEqual } from 'lodash';
-import { useLocalStorageState } from '@shihengtech/hooks';
 import styles from './index.less';
-import { useDebounceFn } from 'ahooks';
+import { useDebounceFn, useLocalStorageState } from 'ahooks';
 
 const MockTimeLine: TimeLine = {
   devicePixelRatio: window.devicePixelRatio,
@@ -109,6 +108,7 @@ export default () => {
   const [form] = Form.useForm();
   const [startImage, setStartImage] = useState<string>();
   const [endImage, setEndImage] = useState<string>();
+  const [first, setFirst] = useState(true);
 
   useEffect(() => {
     if (!isEqual(form.getFieldsValue(), timeline)) {
@@ -153,6 +153,7 @@ export default () => {
       const leftContext = leftCanvas.getContext('2d')!;
       leftContext.clearRect(0, 0, timeLineInfo.width, timeLineInfo.height);
       new TimeLineDrawer(leftTimeLineInfo, leftContext).drawStart();
+      setFirst(false);
     },
     {
       wait: 300,
@@ -187,7 +188,7 @@ export default () => {
   };
 
   return (
-    <div>
+    <div style={{ display: first ? 'none' : 'block' }}>
       <div style={{ display: 'flex', height: '100vh', flexDirection: 'column' }}>
         <div>
           <canvas
@@ -196,7 +197,7 @@ export default () => {
           ></canvas>
         </div>
         <div style={{ flex: 1, display: 'flex', overflow: 'scroll', background: '#f0f2f5' }}>
-          <div style={{ height: '100%', background: 'red' }}>
+          <div style={{ height: '100%' }}>
             <canvas id="left" style={{ height: '100%' }}></canvas>
           </div>
           <div style={{ padding: 16, overflow: 'scroll', flex: 1 }}>
