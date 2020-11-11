@@ -12,13 +12,14 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - uses: actions/setup-node@v1
-        with:
-          node-version: '10.x'
       - name: Install Dependencies
         run: |
-          npm install now
-      - name: Continuous integration
+          npm install
+      - name: Build project
         run: |
-          yarn now --token $ZEIT_TOKEN -A now.json --force --prod
+          npm run build
+      - name: Release Project
+        run: |
+          npm run release
         env:
           ZEIT_TOKEN: ${{ secrets.Now }}
