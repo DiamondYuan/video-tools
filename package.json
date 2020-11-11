@@ -6,6 +6,7 @@
   "author": "DiamondYuan <admin@diamondyuan.com>",
   "license": "MIT",
   "scripts": {
+    "build":"umi build",
     "start": "umi dev"
   },
   "devDependencies": {
@@ -26,6 +27,7 @@
   "dependencies": {
     "@shihengtech/hooks": "^0.0.14",
     "@types/react-color": "^3.0.4",
+    "ahooks": "^2.9.1",
     "react-color": "^2.19.3"
   }
 }
