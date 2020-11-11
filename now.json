@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "/dist/*", "use": "@now/static" }
+  ],
+  "alias": ["vtools.yfd.im"],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/dist/$1"
+    }
+  ]
+}
