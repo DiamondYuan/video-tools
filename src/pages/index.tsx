@@ -380,6 +380,7 @@ export default () => {
                                   }}
                                 />
                                 <MinusCircleOutlined
+                                  disabled={fields.length === 1}
                                   onClick={() => {
                                     remove(field.name);
                                   }}
