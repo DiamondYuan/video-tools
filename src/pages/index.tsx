@@ -17,6 +17,7 @@ import {
   Popover,
   Upload,
   message,
+  Modal,
 } from 'antd';
 import ColorPicker from '../componments/ColorPicker';
 import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
@@ -103,12 +104,23 @@ function loadFile(fileName: string, content: string) {
   URL.revokeObjectURL(aLink.href);
 }
 
+const downloadData = (data: string) => {
+  let dlLink = document.createElement('a');
+  dlLink.download = `时间轴.png`;
+  dlLink.href = data;
+  dlLink.dataset.downloadurl = ['image/png', dlLink.download, dlLink.href].join(':');
+  document.body.appendChild(dlLink);
+  dlLink.click();
+  document.body.removeChild(dlLink);
+};
+
 export default () => {
   const [timeline, setTimeLine] = useLocalStorageState<TimeLine>('timeline', MockTimeLine);
   const [form] = Form.useForm();
   const [startImage, setStartImage] = useState<string>();
   const [endImage, setEndImage] = useState<string>();
   const [first, setFirst] = useState(true);
+  const [modal, setModal] = useState<string>('');
 
   useEffect(() => {
     if (!isEqual(form.getFieldsValue(), timeline)) {
@@ -288,41 +300,46 @@ export default () => {
                   >
                     <Row gutter={8}>
                       <Col span={12}>
-                        <Popover
-                          placement="bottomLeft"
-                          content={<img style={{ maxHeight: '50vh' }} src={startImage}></img>}
-                        >
-                          <canvas
-                            onClick={() => download('start')}
-                            id="start"
-                            style={{
-                              cursor: 'pointer',
-                              border: '1px solid #ccc',
-                              maxHeight: '500px',
-                              maxWidth: '100%',
-                            }}
-                          />
-                        </Popover>
+                        <canvas
+                          onClick={() => setModal(startImage!)}
+                          id="start"
+                          style={{
+                            cursor: 'pointer',
+                            border: '1px solid #ccc',
+                            maxHeight: '500px',
+                            maxWidth: '100%',
+                          }}
+                        />
                       </Col>
                       <Col span={12}>
-                        <Popover
-                          placement="bottomLeft"
-                          content={<img style={{ maxHeight: '50vh' }} src={endImage}></img>}
-                        >
-                          <canvas
-                            onClick={() => download('end')}
-                            id="end"
-                            style={{
-                              cursor: 'pointer',
-                              border: '1px solid #ccc',
-                              maxHeight: '500px',
-                              maxWidth: '100%',
-                            }}
-                          />
-                        </Popover>
+                        <canvas
+                          id="end"
+                          onClick={() => setModal(endImage!)}
+                          style={{
+                            cursor: 'pointer',
+                            border: '1px solid #ccc',
+                            maxHeight: '500px',
+                            maxWidth: '100%',
+                          }}
+                        />
                       </Col>
                     </Row>
                   </Card>
+                  <Modal
+                    title="预览"
+                    visible={!!modal}
+                    onCancel={() => setModal('')}
+                    style={{ top: 20 }}
+                    width={'80vw'}
+                    cancelText="关闭"
+                    okText="下载"
+                    onOk={() => {
+                      downloadData(modal);
+                      setModal('');
+                    }}
+                  >
+                    <img style={{ width: '100%', border: '1px solid black' }} src={modal}></img>
+                  </Modal>
                   <Card style={{ flex: 1, marginTop: 16, overflow: 'scroll' }} title="信息">
                     <Form.List name="videos">
                       {(fields, { add, remove }) => {
@@ -430,12 +447,12 @@ export default () => {
                       <Row>
                         <Col span={12}>
                           <Form.Item label="尺寸" name="size">
-                            <Slider tooltipVisible={true}></Slider>
+                            <Slider></Slider>
                           </Form.Item>
                         </Col>
                         <Col span={12}>
                           <Form.Item label="字体大小" name="fontSize">
-                            <Slider tooltipVisible={true}></Slider>
+                            <Slider></Slider>
                           </Form.Item>
                         </Col>
                         <Col span={6}>
