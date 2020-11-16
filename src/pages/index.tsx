@@ -14,10 +14,10 @@ import {
   TimePicker,
   Card,
   Button,
-  Popover,
   Upload,
   message,
   Modal,
+  Select,
 } from 'antd';
 import ColorPicker from '../componments/ColorPicker';
 import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
@@ -93,6 +93,39 @@ const colorFormItemLayout = {
   },
 };
 
+const screen = {
+  '320': [200, 240, 576, 482],
+  '352': [240, 288],
+  '480': [272, 320],
+  '512': [384],
+  '560': [360],
+  '640': [350, 360, 480],
+  '648': [486],
+  '704': [480],
+  '720': [348, 350, 360, 576, 480, 486, 540],
+  '768': [576],
+  '800': [600, 480],
+  '854': [480],
+  '960': [540, 640],
+  '1024': [600, 768],
+  '1152': [864],
+  '1280': [720, 768, 800, 1024],
+  '1366': [768],
+  '1400': [1050],
+  '1440': [900],
+  '1600': [1024, 1200],
+  '1680': [1050],
+  '1920': [1200, 1080],
+  '2048': [1080, 1536],
+  '2560': [1080, 1440, 1600, 2048],
+  '3200': [2048, 2400],
+  '3440': [1440],
+  '3840': [2160, 2400],
+  '4096': [2160, 3072],
+  '5120': [4096],
+  '6400': [4096, 4800],
+  '7680': [4320, 4800],
+};
 function loadFile(fileName: string, content: string) {
   let aLink = document.createElement('a');
   let blob = new Blob([content], {
@@ -130,6 +163,12 @@ export default () => {
 
   const { run } = useDebounceFn(
     () => {
+      if (
+        (timeline.height / timeline.width >= 3.5 || timeline.width / timeline.height > 3.5) &&
+        !first
+      ) {
+        return;
+      }
       const timeLineInfo = transFormTimeLine(timeline);
       const startCanvas: HTMLCanvasElement = document.querySelector('#start')! as HTMLCanvasElement;
       startCanvas.setAttribute('width', `${timeLineInfo.width}`);
@@ -558,17 +597,32 @@ export default () => {
                       <Row>
                         <Col span={8}>
                           <Form.Item label="屏幕宽度" name="width">
-                            <InputNumber></InputNumber>
+                            <Select
+                              style={{ width: '100px' }}
+                              options={Object.keys(screen).map((o) => ({
+                                key: o,
+                                value: parseInt(o, 10),
+                              }))}
+                            ></Select>
                           </Form.Item>
                         </Col>
                         <Col span={8}>
                           <Form.Item label="屏幕高度" name="height">
-                            <InputNumber></InputNumber>
+                            <Select
+                              style={{ width: '100px' }}
+                              disabled={!form.getFieldValue('width')}
+                              options={(
+                                screen[`${form.getFieldValue('width')}` as '1920'] || []
+                              ).map((o) => ({
+                                key: `${o}`,
+                                value: `${o}`,
+                              }))}
+                            ></Select>
                           </Form.Item>
                         </Col>
                         <Col span={8}>
                           <Form.Item label="缩放比" name="devicePixelRatio">
-                            <InputNumber></InputNumber>
+                            <InputNumber max={4}></InputNumber>
                           </Form.Item>
                         </Col>
                       </Row>
