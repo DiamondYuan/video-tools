@@ -240,6 +240,15 @@ export default () => {
                       </Button>,
                       <Button
                         style={{ marginLeft: 8 }}
+                        key="reset"
+                        onClick={() => {
+                          setTimeLine(MockTimeLine);
+                        }}
+                      >
+                        恢复配置
+                      </Button>,
+                      <Button
+                        style={{ marginLeft: 8 }}
                         key="exportConfig"
                         type="primary"
                         onClick={() => {
