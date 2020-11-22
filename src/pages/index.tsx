@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-use-before-define
-import React, { useLayoutEffect, useState, useEffect } from 'react';
+import React, { useLayoutEffect, useState } from 'react';
 import { MAGIC_KEY, TimeLine } from '../types';
 import {
   Row,
@@ -24,7 +24,6 @@ import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import TimeLineDrawer from '../componments/TimeLineDrawer';
 import { transFormTimeLine } from '../utils/transFormTimeLine';
-import { isEqual } from 'lodash';
 import styles from './index.less';
 import { useDebounceFn, useLocalStorageState } from 'ahooks';
 
@@ -126,6 +125,9 @@ const screen = {
   '6400': [4096, 4800],
   '7680': [4320, 4800],
 };
+
+type ScreenWidth = keyof typeof screen;
+
 function loadFile(fileName: string, content: string) {
   let aLink = document.createElement('a');
   let blob = new Blob([content], {
@@ -154,12 +156,6 @@ export default () => {
   const [endImage, setEndImage] = useState<string>();
   const [first, setFirst] = useState(true);
   const [modal, setModal] = useState<string>('');
-
-  useEffect(() => {
-    if (!isEqual(form.getFieldsValue(), timeline)) {
-      form.setFieldsValue(timeline);
-    }
-  }, [timeline, form]);
 
   const { run } = useDebounceFn(
     () => {
@@ -194,16 +190,6 @@ export default () => {
       const showContext = showCanvas.getContext('2d')!;
       showContext.clearRect(0, 0, timeLineInfo.width, timeLineInfo.height);
       new TimeLineDrawer(showTimeLineInfo, showContext).drawStart();
-      const leftTimeLineInfo = transFormTimeLine({
-        ...timeline,
-        position: 'left',
-      });
-      const leftCanvas: HTMLCanvasElement = document.querySelector('#left')! as HTMLCanvasElement;
-      leftCanvas.setAttribute('width', `${timeLineInfo.size}`);
-      leftCanvas.setAttribute('height', `${timeLineInfo.height}`);
-      const leftContext = leftCanvas.getContext('2d')!;
-      leftContext.clearRect(0, 0, timeLineInfo.width, timeLineInfo.height);
-      new TimeLineDrawer(leftTimeLineInfo, leftContext).drawStart();
       setFirst(false);
     },
     {
@@ -248,9 +234,6 @@ export default () => {
           ></canvas>
         </div>
         <div style={{ flex: 1, display: 'flex', overflow: 'scroll', background: '#f0f2f5' }}>
-          <div style={{ height: '100%' }}>
-            <canvas id="left" style={{ height: '100%' }}></canvas>
-          </div>
           <div style={{ padding: 16, overflow: 'scroll', flex: 1 }}>
             <Form
               style={{ height: '100%' }}
@@ -292,7 +275,7 @@ export default () => {
                         style={{ marginLeft: 8 }}
                         key="reset"
                         onClick={() => {
-                          setTimeLine(MockTimeLine);
+                          form.setFieldsValue(MockTimeLine);
                         }}
                       >
                         恢复配置
@@ -323,7 +306,7 @@ export default () => {
                                 message.error('配置文件格式不正确');
                                 return;
                               }
-                              setTimeLine(JSON.parse(result));
+                              form.setFieldsValue(JSON.parse(result));
                             } catch (_error) {
                               message.error('解析配置失败');
                             }
@@ -429,7 +412,6 @@ export default () => {
                                         value: diffSeconds,
                                       },
                                     ]);
-                                    setTimeLine(form.getFieldsValue());
                                   }}
                                 />
                                 <PlusCircleOutlined
@@ -462,7 +444,7 @@ export default () => {
                     title="配置"
                     style={{ height: '100%', overflow: 'scroll' }}
                     extra={
-                      <Form.Item name="name">
+                      <Form.Item name="name" className={styles.videoFormItemTime}>
                         <Input></Input>
                       </Form.Item>
                     }
@@ -598,6 +580,17 @@ export default () => {
                           <Form.Item label="屏幕宽度" name="width">
                             <Select
                               style={{ width: '100px' }}
+                              onChange={(value: ScreenWidth) => {
+                                const heightList = screen[value] || [];
+                                if (heightList.length > 0) {
+                                  const currentHeight = form.getFieldValue('width');
+                                  if (!heightList.includes(currentHeight)) {
+                                    form.setFieldsValue({
+                                      height: heightList[0],
+                                    });
+                                  }
+                                }
+                              }}
                               options={Object.keys(screen).map((o) => ({
                                 key: o,
                                 value: parseInt(o, 10),
@@ -611,7 +604,7 @@ export default () => {
                               style={{ width: '100px' }}
                               disabled={!form.getFieldValue('width')}
                               options={(
-                                screen[`${form.getFieldValue('width')}` as '1920'] || []
+                                screen[`${form.getFieldValue('width')}` as ScreenWidth] || []
                               ).map((o) => ({
                                 key: `${o}`,
                                 value: `${o}`,

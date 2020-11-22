@@ -65,7 +65,6 @@ function transFormTimeLine(timeLine: TimeLine): TimeLineInfo {
     },
   };
   let totalTime = 0;
-  console.log(timeLine.videos);
   for (const video of timeLine.videos) {
     if (typeof video.time !== 'number' || video.time <= 0 || !video.text) {
       continue;
