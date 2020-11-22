@@ -621,7 +621,7 @@ export default () => {
                         </Col>
                         <Col span={8}>
                           <Form.Item label="缩放比" name="devicePixelRatio">
-                            <InputNumber max={4}></InputNumber>
+                            <InputNumber max={4} min={1}></InputNumber>
                           </Form.Item>
                         </Col>
                       </Row>
