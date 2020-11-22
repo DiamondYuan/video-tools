@@ -201,6 +201,14 @@ export default () => {
     run();
   }, [timeline, run]);
 
+  const updateFormValues = (values: Partial<TimeLine>) => {
+    form.setFieldsValue(values);
+    setTimeLine((v) => ({
+      ...v,
+      ...values,
+    }));
+  };
+
   const download = (id: string) => {
     const canvas: HTMLCanvasElement = document.querySelector(`#${id}`)! as HTMLCanvasElement;
     let dlLink = document.createElement('a');
@@ -275,7 +283,7 @@ export default () => {
                         style={{ marginLeft: 8 }}
                         key="reset"
                         onClick={() => {
-                          form.setFieldsValue(MockTimeLine);
+                          updateFormValues(MockTimeLine);
                         }}
                       >
                         恢复配置
@@ -306,7 +314,7 @@ export default () => {
                                 message.error('配置文件格式不正确');
                                 return;
                               }
-                              form.setFieldsValue(JSON.parse(result));
+                              updateFormValues(JSON.parse(result));
                             } catch (_error) {
                               message.error('解析配置失败');
                             }
@@ -585,7 +593,7 @@ export default () => {
                                 if (heightList.length > 0) {
                                   const currentHeight = form.getFieldValue('width');
                                   if (!heightList.includes(currentHeight)) {
-                                    form.setFieldsValue({
+                                    updateFormValues({
                                       height: heightList[0],
                                     });
                                   }
