@@ -65,16 +65,14 @@ function transFormTimeLine(timeLine: TimeLine): TimeLineInfo {
     },
   };
   let totalTime = 0;
-  // eslint-disable-next-line no-undefined
-  timeLine.videos = timeLine.videos.filter((o) => o.text !== undefined && o.time !== undefined);
-  for (let i = 0; i < timeLine.videos.length; i++) {
-    if (!timeLine.videos[i].text) {
+  console.log(timeLine.videos);
+  for (const video of timeLine.videos) {
+    if (typeof video.time !== 'number' || video.time <= 0 || !video.text) {
       continue;
     }
-    totalTime = totalTime + timeLine.videos[i].time;
+    totalTime = totalTime + video.time;
   }
   const finalVideos = [...timeLine.videos];
-
   return {
     ...timeLine,
     points,

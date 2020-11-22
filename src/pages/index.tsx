@@ -257,7 +257,6 @@ export default () => {
               form={form}
               initialValues={timeline}
               onValuesChange={(_e, values) => {
-                values.videos = values.videos.filter((o: any) => typeof o.time === 'number');
                 setTimeLine((v) => {
                   return {
                     ...v,

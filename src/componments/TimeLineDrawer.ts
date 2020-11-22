@@ -83,7 +83,7 @@ class TimeLineDrawer {
     let pointer = { x: 0, y: 0 };
     for (let i = 0; i < videos.length; i++) {
       const video = videos[i];
-      if (!video.text || video.time <= 0) {
+      if (!video.text || video.time <= 0 || typeof video.time !== 'number') {
         continue;
       }
       const isLast = i === videos.length - 1;
