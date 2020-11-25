@@ -50,35 +50,31 @@ const MockTimeLine: TimeLine = {
   fontSize: 20,
   size: 40,
   reverse: false,
-  position: 'right',
+  position: 'bottom',
   videos: [
     {
-      time: 200,
-      text: '前言',
+      time: 50,
+      text: '输入各段视频的描述、长度',
     },
     {
       time: 60,
-      text: '前期准备',
+      text: '设置缩略图尺寸、颜色、位置',
     },
     {
       time: 60,
-      text: '剪辑时添加标记',
+      text: '点击缩略图预览与下载时间轴',
+    },
+    {
+      time: 80,
+      text: '添加时间轴到剪辑软件',
     },
     {
       time: 40,
-      text: '导出参考图',
+      text: '在剪辑软件设置关键帧',
     },
     {
-      time: 100,
-      text: '在 PS 绘制时间轴',
-    },
-    {
-      time: 40,
-      text: '最后编辑',
-    },
-    {
-      time: 20,
-      text: '结尾',
+      time: 30,
+      text: '做完啦～',
     },
   ],
 };
@@ -270,23 +266,13 @@ export default () => {
                     title="预览"
                     extra={[
                       <Button
-                        key="export"
-                        type="primary"
-                        onClick={() => {
-                          download('start');
-                          download('end');
-                        }}
-                      >
-                        导出时间轴
-                      </Button>,
-                      <Button
                         style={{ marginLeft: 8 }}
                         key="reset"
                         onClick={() => {
                           updateFormValues(MockTimeLine);
                         }}
                       >
-                        恢复配置
+                        恢复默认配置
                       </Button>,
                       <Button
                         style={{ marginLeft: 8 }}
