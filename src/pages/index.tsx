@@ -473,22 +473,22 @@ export default () => {
                     </Form.Item>
                     <Form.Item label="时间轴">
                       <Row>
-                        <Col span={12}>
+                        <Col span={8}>
                           <Form.Item label="尺寸" name="size">
-                            <Slider></Slider>
+                            <InputNumber></InputNumber>
                           </Form.Item>
                         </Col>
-                        <Col span={12}>
+                        <Col span={8}>
                           <Form.Item label="字体大小" name="fontSize">
-                            <Slider></Slider>
+                            <InputNumber></InputNumber>
                           </Form.Item>
                         </Col>
-                        <Col span={6}>
+                        <Col span={8}>
                           <Form.Item label="翻转" name="reverse">
                             <Switch></Switch>
                           </Form.Item>
                         </Col>
-                        <Col span={18}>
+                        <Col span={24}>
                           <Form.Item label="时间轴位置" name="position">
                             <Radio.Group>
                               {[
