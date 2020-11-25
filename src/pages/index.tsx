@@ -6,7 +6,6 @@ import {
   Col,
   Form,
   Switch,
-  Slider,
   Radio,
   InputNumber,
   Space,
@@ -203,17 +202,6 @@ export default () => {
       ...v,
       ...values,
     }));
-  };
-
-  const download = (id: string) => {
-    const canvas: HTMLCanvasElement = document.querySelector(`#${id}`)! as HTMLCanvasElement;
-    let dlLink = document.createElement('a');
-    dlLink.download = `${id}.png`;
-    dlLink.href = canvas.toDataURL('image/png');
-    dlLink.dataset.downloadurl = ['image/png', dlLink.download, dlLink.href].join(':');
-    document.body.appendChild(dlLink);
-    dlLink.click();
-    document.body.removeChild(dlLink);
   };
 
   const getTime = (index: number) => {
