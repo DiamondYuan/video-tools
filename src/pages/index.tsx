@@ -25,6 +25,7 @@ import TimeLineDrawer from '../componments/TimeLineDrawer';
 import { transFormTimeLine } from '../utils/transFormTimeLine';
 import styles from './index.less';
 import { useDebounceFn, useLocalStorageState } from 'ahooks';
+import update from 'immutability-helper';
 
 const MockTimeLine: TimeLine = {
   devicePixelRatio: window.devicePixelRatio,
@@ -387,13 +388,20 @@ export default () => {
                                   value={getTime(index)}
                                   allowClear={false}
                                   onChange={(e) => {
-                                    const diffSeconds = e!.diff(getTime(index - 1), 'seconds');
-                                    form.setFields([
-                                      {
-                                        name: ['videos', field.name, 'time'],
-                                        value: diffSeconds,
+                                    let diffSeconds = e!.diff(getTime(index - 1), 'seconds');
+                                    if (diffSeconds <= 0) {
+                                      diffSeconds = 1;
+                                    }
+                                    const newData = update(timeline, {
+                                      videos: {
+                                        [field.name]: {
+                                          time: {
+                                            $set: diffSeconds,
+                                          },
+                                        },
                                       },
-                                    ]);
+                                    });
+                                    updateFormValues(newData);
                                   }}
                                 />
                                 <PlusCircleOutlined
